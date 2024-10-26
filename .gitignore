@@ -1,0 +1,9 @@
+*.o
+
+# dev
+dev.*
+dev/*
+
+# binaries
+wusel
+test
