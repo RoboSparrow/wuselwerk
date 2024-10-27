@@ -90,24 +90,55 @@ void ui_exit(App *app, SDL_Window *window, SDL_Renderer *renderer, TTF_Font *fon
 // widgets
 ////
 
+/**
+ * Render app statusbar
+ */
+
 int ui_draw_status_bar(App *app, SDL_Renderer *renderer, TTF_Font *font) {
     if (!app || !renderer || !font ) {
         return -1;
     }
 
-    char msg[128] = {0};
-    snprintf(msg, 128, "%s", (app->paused) ? "paused" : ">>>");
+    char msg[256];
+    SDL_Texture *texture;
+    SDL_Rect trect = {0};
 
-    SDL_Texture *texture = ui_render_text(msg, renderer, font, app->fg_color);
+    // state: running
+
+    msg[0] = 0;
+    snprintf(msg, 256, "%s", (app->paused) ? "paused" : ">>>");
+    texture = ui_render_text(msg, renderer, font, app->fg_color);
     if (!texture){
-        return 1; // TODO log error
+        LOG_ERROR_F("error rendering status bar (1): %s\n", SDL_GetError());
+        return -1;
     }
 
-    SDL_Rect trect = {0};
     SDL_QueryTexture(texture, NULL, NULL, &trect.w, &trect.h);
-
     trect.x = 5;
     trect.y = app->window.h - trect.h -5;
 
-    return SDL_RenderCopy(renderer, texture, NULL, &trect);
+    if (SDL_RenderCopy(renderer, texture, NULL, &trect)) {
+        LOG_ERROR_F("error rendering status bar (1): %s\n", SDL_GetError());
+        return -1;
+    }
+
+    // build version
+
+    msg[0] = 0;
+    snprintf(msg, 256, "version: %s", (app->version) ? app->version : "<unkown-version>");
+    texture = ui_render_text(msg, renderer, font, app->fg_color);
+    if (!texture){
+        LOG_ERROR_F("error rendering status bar (2): %s\n", SDL_GetError());
+        return -1;
+    }
+
+    SDL_QueryTexture(texture, NULL, NULL, &trect.w, &trect.h);
+
+    trect.x = (app->window.w - trect.w) - 5;
+    trect.y = app->window.h - trect.h -5;
+
+    if (SDL_RenderCopy(renderer, texture, NULL, &trect)) {
+        LOG_ERROR_F("error rendering status bar (2): %s\n", SDL_GetError());
+        return -1;
+    }
 }

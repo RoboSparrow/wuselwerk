@@ -77,6 +77,12 @@ static void configure(App *app, Population *pop, int argc, char **argv) {
         }
     }
 
+    // parse version info
+    ival = app_get_version(app);
+    if (ival) {
+        LOG_ERROR_F("can't read build info from file '%s'", APP_BUILD_INFO_PATH);
+    }
+
     return;
 }
 

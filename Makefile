@@ -16,7 +16,10 @@ TEST_C=$(wildcard $(TESTDIR)/test.*.c)
 TEST_O=$(OBJECTS) $(patsubst %.c, %.o, $(TEST_C))
 TEST_H=$(HEADERS) $(TESTDIR)/test.h
 
-all:	$(BIN) test
+all:	prepare $(BIN) test
+
+prepare:
+	./scripts/make.build.sh
 
 $(BIN):	$(OBJECTS) $(SRCDIR)/main.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LOPT)

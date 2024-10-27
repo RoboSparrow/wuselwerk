@@ -7,9 +7,11 @@
 typedef struct Population Population; // forward declaration (TODO, why neccessary here?)
 
 #define APP_MAX_FPS 60
+#define APP_BUILD_INFO_PATH "./build"
 
 typedef struct App {
     char name[128];
+    char version[128];
     SDL_Rect window;
     SDL_Color bg_color;
     SDL_Color fg_color;
@@ -21,5 +23,7 @@ typedef struct App {
     char running;
     char paused;
 } App;
+
+int app_get_version(App *app);
 
 #endif

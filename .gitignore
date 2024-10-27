@@ -7,3 +7,6 @@ dev/*
 # binaries
 wusel
 test
+
+# generated files:
+build
