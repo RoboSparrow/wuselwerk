@@ -74,7 +74,6 @@ int vec2_equals(Vec2 l, Vec2 r) {
  * -x, y axis only (2d)
  */
 Vec2 vec2_rand_from(Vec2 pos, float radius) {
-
     PVec2 p = {
         .r = (float) rand_range_f(-1 * radius, radius),
         .phi = rand_range_f(0, VEC2_TWO_PI) // radians
