@@ -5,6 +5,16 @@
 #include "vec2.h"
 #include "utils.h"
 
+
+// @see https://www.gnu.org/software/libc/manual/html_node/Mathematical-Constants.html
+#define _USE_MATH_DEFINES // math.h on older systems
+
+#ifndef M_PI
+#define M_PI   3.14159265359
+#endif
+
+const float VEC2_TWO_PI = M_PI * 2;
+
 /**
  * Create a copy of a vector
  */
@@ -64,9 +74,10 @@ int vec2_equals(Vec2 l, Vec2 r) {
  * -x, y axis only (2d)
  */
 Vec2 vec2_rand_from(Vec2 pos, float radius) {
+
     PVec2 p = {
         .r = (float) rand_range_f(-1 * radius, radius),
-        .phi = rand_range_f(0, M_2_PI) // radians
+        .phi = rand_range_f(0, VEC2_TWO_PI) // radians
     };
     return vec2_polar_to_cartesian(p);
 }

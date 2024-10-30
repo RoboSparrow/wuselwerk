@@ -1,6 +1,9 @@
 #ifndef __VEC2_H__
 #define __VEC2_H__
 
+#include <math.h>
+
+
 /**
  * Cartesian
  */

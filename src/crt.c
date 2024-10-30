@@ -47,7 +47,6 @@ Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos) {
 void crt_destroy(Creature *crt) {
     // provision for future complexities
     freez(crt);
-    return;
 }
 
 
@@ -118,7 +117,6 @@ void crt_print(FILE *fp, Creature *crt) {
         crt->pos.x, crt->pos.y,
         crt->targ.x, crt->targ.y
     );
-    return;
 }
 
 int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font) {

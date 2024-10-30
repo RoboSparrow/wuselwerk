@@ -82,8 +82,6 @@ static void configure(App *app, Population *pop, int argc, char **argv) {
     if (ival) {
         LOG_ERROR_F("can't read build info from file '%s'", APP_BUILD_INFO_PATH);
     }
-
-    return;
 }
 
 

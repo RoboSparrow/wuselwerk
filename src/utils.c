@@ -8,7 +8,6 @@ void freez(void *ptr) {
     if (ptr) {
         free(ptr);
     }
-    return;
 }
 
 void _seed() {

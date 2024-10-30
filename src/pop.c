@@ -24,5 +24,4 @@ void pop_print(FILE *fp, Population *pop) {
         fprintf(fp, "{%d, \"%s\", %s}%s", pop->members[i]->id, pop->members[i]->name, CRT_TYPE_NAME(pop->members[i]->type), (i < pop->len - 1) ? ", " : "");
     }
     fprintf(fp, "] }\n");
-    return;
 }
