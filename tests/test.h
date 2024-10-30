@@ -19,6 +19,8 @@ extern unsigned int gcount;
 void test_vec2(int argc, char **argv);
 // test.crt.c
 void test_crt(int argc, char **argv);
+// test.qtree.c
+void test_qtree(int argc, char **argv);
 
 
 #endif
