@@ -4,7 +4,7 @@
 #include <SDL2/SDL.h>
 #include "world.h"
 
-typedef struct Population Population; // forward declaration (TODO, why neccessary here?)
+typedef struct World World; // forward declaration (TODO, why neccessary here?)
 
 #define APP_MAX_FPS 60
 #define APP_BUILD_INFO_PATH "./build"

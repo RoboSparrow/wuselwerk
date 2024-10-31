@@ -10,28 +10,20 @@
 #include "ui.h"
 
 
-void pop_destroy(Population *pop) {
-    for (int i = 0; i < pop->len; i++) {
-        crt_destroy(pop->members[i]);
-    }
-    pop->len = 0;
-}
-
-void pop_print(FILE *fp, Population *pop) {
+void world_print(FILE *fp, World *world) {
     if(!fp) {
         return;
     }
-    if (!pop) {
+    if (!world) {
         fprintf(fp, "<NULL>\n");
     }
 
-    fprintf(fp, "{ len: %ld, members: [", pop->len);
-    for (int i = 0; i < pop->len; i++) {
-        fprintf(fp, "{%d, \"%s\", %s}%s", pop->members[i]->id, pop->members[i]->name, CRT_TYPE_NAME(pop->members[i]->type), (i < pop->len - 1) ? ", " : "");
+    fprintf(fp, "{ len: %ld, population: [", world->len);
+    for (int i = 0; i < world->len; i++) {
+        fprintf(fp, "{%d, \"%s\", %s}%s", world->population[i]->id, world->population[i]->name, CRT_TYPE_NAME(world->population[i]->type), (i < world->len - 1) ? ", " : "");
     }
     fprintf(fp, "] }\n");
 }
-
 
 int world_update(App *app) {
     int res = 0;
@@ -47,4 +39,11 @@ int world_draw(App *app, SDL_Renderer *renderer, TTF_Font *font) {
 
     res = ui_draw_status_bar(app, renderer, font);
     return res;
+}
+
+void world_destroy(World *world) {
+    for (int i = 0; i < world->len; i++) {
+        crt_destroy(world->population[i]);
+    }
+    world->len = 0;
 }

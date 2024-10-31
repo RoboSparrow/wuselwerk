@@ -27,8 +27,8 @@
 #define FONT_SZ 12
 
 
-static void configure(App *app, Population *pop, int argc, char **argv) {
-    if (!app || !pop) {
+static void configure(App *app, World *world, int argc, char **argv) {
+    if (!app || !world) {
         return;
     }
 
@@ -44,11 +44,11 @@ static void configure(App *app, Population *pop, int argc, char **argv) {
                     fprintf(stderr, "invalid '%c' option value\n", opt);
                     exit(1);
                 }
-                if (ival > POP_MAX) {
-                    fprintf(stderr, "invalid '%c' option value: pop > max (%d > %d)\n", opt, ival, POP_MAX);
+                if (ival > WORLD_POP_MAX) {
+                    fprintf(stderr, "invalid '%c' option value: pop > max (%d > %d)\n", opt, ival, WORLD_POP_MAX);
                     exit(1);
                 }
-                pop->len = ival;
+                world->len = ival;
             break;
 
             case 'f':
@@ -92,16 +92,19 @@ int main (int argc, char **argv) {
 
     int prev = SDL_GetTicks();
 
-    Population pop = {
+    World world = {
+        .nw = {0},
+        .se = {DEFAULT_WIDTH, DEFAULT_HEIGHT},
         .len=rand_range(1, 10),
-        .members={0}
+        .population={0}
     };
 
+    World *w = &world; // TODO remove after properly initalising world
     App app =  {
         .name="Test window",
         .window={
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            DEFAULT_WIDTH, DEFAULT_HEIGHT
+            WORLD_WIDTH(w), WORLD_HEIGHT(w)
         },
 
         .bg_color={0, 0, 0, SDL_ALPHA_OPAQUE},
@@ -115,7 +118,7 @@ int main (int argc, char **argv) {
         .paused=0,
     };
 
-    configure(&app, &pop, argc, argv);
+    configure(&app, &world, argc, argv);
     window = ui_init_window(&app);
     renderer = ui_init_renderer(&app, window);
     font = ui_init_font(&app);
@@ -125,7 +128,7 @@ int main (int argc, char **argv) {
     char name[CRT_NAME_LEN];
     Vec2 pos = {0};
 
-    for (int i = 0; i < pop.len; i++) {
+    for (int i = 0; i < world.len; i++) {
         rand_str(name, CRT_NAME_LEN);
         type = rand_range(1, CRT_TYPE_MAX - 1);
         pos.x = rand_range_f(0, app.window.w);
@@ -134,7 +137,7 @@ int main (int argc, char **argv) {
         crt = crt_birth(i, name, type, pos);
         crt->agility = rand_range_f(0, 1.f);
         crt_random_targ(crt, &app, 100.f); // TODO radius perception?
-        pop.members[i] = crt;
+        world.population[i] = crt;
 
         // crt_print(stdout, crt); // dev
         crt_draw(crt, &app, renderer, font);
@@ -180,9 +183,9 @@ int main (int argc, char **argv) {
         world_update(&app);
         world_draw(&app, renderer, font);
 
-        for (int i = 0; i < pop.len; i++) {
-            crt_update(pop.members[i], &app);
-            crt_draw(pop.members[i], &app, renderer, font);
+        for (int i = 0; i < world.len; i++) {
+            crt_update(world.population[i], &app);
+            crt_draw(world.population[i], &app, renderer, font);
         }
 
         // render changes
@@ -190,7 +193,7 @@ int main (int argc, char **argv) {
         prev = SDL_GetTicks();
     } // while
 
-    pop_destroy(&pop);
+    world_destroy(&world);
     ui_exit(&app, window, renderer, font);
 
   return 0;

@@ -228,7 +228,6 @@ static void test_tree_find() {
 }
 
 void test_qtree(int argc, char **argv) {
-
     test_tree();
     test_node();
     test_node_bounds();
