@@ -2,7 +2,7 @@
 #define __APP_H__
 
 #include <SDL2/SDL.h>
-#include "pop.h"
+#include "world.h"
 
 typedef struct Population Population; // forward declaration (TODO, why neccessary here?)
 

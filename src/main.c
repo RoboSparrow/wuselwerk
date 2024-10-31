@@ -14,7 +14,6 @@
 #include "ui.h"
 
 #include "world.h"
-#include "pop.h"
 #include "crt.h"
 
 #include "vec2.h"
