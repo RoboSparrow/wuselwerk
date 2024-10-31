@@ -58,23 +58,23 @@ typedef struct QuadTree {
 } QuadTree;
 
 
-QuadTree *quad_tree_create(Vec2 window_nw, Vec2 window_se);
-void quad_tree_destroy(QuadTree *tree);
+QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se);
+void qtree_destroy(QuadTree *tree);
 
-int quad_tree_insert(QuadTree *tree, Creature *crt);
-Creature *quad_tree_find(QuadTree *tree, Vec2 pos);
+int qtree_insert(QuadTree *tree, Creature *crt);
+Creature *qtree_find(QuadTree *tree, Vec2 pos);
 
-QuadNode *quad_node_create();
-void quad_node_destroy(QuadNode *node);
+QuadNode *qnode_create();
+void qnode_destroy(QuadNode *node);
 
-int quad_node_isempty(QuadNode *node);
-int quad_node_isleaf(QuadNode *node);
-int quad_node_ispointer(QuadNode *node);
+int qnode_isempty(QuadNode *node);
+int qnode_isleaf(QuadNode *node);
+int qnode_ispointer(QuadNode *node);
 
-void quad_node_set_bounds(QuadNode *node, Vec2 nw, Vec2 se);
-void quad_node_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) ;
+void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se);
+void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) ;
 
-void quad_tree_print(QuadTree *tree);
-void quad_node_print(QuadNode *node);
+void qtree_print(QuadTree *tree);
+void qnode_print(QuadNode *node);
 
 #endif

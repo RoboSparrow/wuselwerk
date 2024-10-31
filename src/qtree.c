@@ -55,7 +55,7 @@ static void _node_reset(QuadTree *tree, QuadNode *node) {
 
 /**
  * Inserts an entity into a tree node. The node might be split into four childs, or the  already existing entity in this node might be replaced
- * Note: The position bounds must be checked by callee (quad_tree_insert())
+ * Note: The position bounds must be checked by callee (qtree_insert())
  */
 static int _node_insert(QuadTree *tree, QuadNode *node, Creature *crt) {
     if (!tree || !crt) { // !node?
@@ -63,13 +63,13 @@ static int _node_insert(QuadTree *tree, QuadNode *node, Creature *crt) {
     }
 
     // 1. insert into THIS (empty) node (just created before)
-    if (quad_node_isempty(node)) {
+    if (qnode_isempty(node)) {
         node->crt = crt;
         return QUAD_INSERTED;
     }
 
     // 2. replace THIS node OR split and insert into CHILDREN
-    if (quad_node_isleaf(node)) {
+    if (qnode_isleaf(node)) {
         // 2.1 pos match: replace
         if (node->crt->pos.x == crt->pos.x && node->crt->pos.y == crt->pos.y) {
             _node_reset(tree, node);
@@ -87,7 +87,7 @@ static int _node_insert(QuadTree *tree, QuadNode *node, Creature *crt) {
     }
 
     // 3. insert into one of THIS CHILDREN
-    if (quad_node_ispointer(node)) {
+    if (qnode_ispointer(node)) {
         QuadNode *child = _node_quadrant(node, crt->pos);
         if(!child) {
              return QUAD_FAILED;
@@ -107,10 +107,10 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
         return QUAD_FAILED;
     }
 
-    QuadNode *nw = quad_node_create();
-    QuadNode *ne = quad_node_create();
-    QuadNode *sw = quad_node_create();
-    QuadNode *se = quad_node_create();
+    QuadNode *nw = qnode_create();
+    QuadNode *ne = qnode_create();
+    QuadNode *sw = qnode_create();
+    QuadNode *se = qnode_create();
 
     if (!nw || !ne || !sw || !se) {
         return QUAD_FAILED;
@@ -145,10 +145,10 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
     float maxy = node->self_se.y;
 
     /*                         nw                     se              */
-    quad_node_set_bounds(nw,  (Vec2) {minx, miny}, (Vec2) {ctrx, ctry});
-    quad_node_set_bounds(ne,  (Vec2) {ctrx, miny}, (Vec2) {maxx, ctry});
-    quad_node_set_bounds(sw,  (Vec2) {minx, ctry}, (Vec2) {ctrx, ctry});
-    quad_node_set_bounds(se,  (Vec2) {ctrx, ctry}, (Vec2) {maxx, maxy});
+    qnode_set_bounds(nw,  (Vec2) {minx, miny}, (Vec2) {ctrx, ctry});
+    qnode_set_bounds(ne,  (Vec2) {ctrx, miny}, (Vec2) {maxx, ctry});
+    qnode_set_bounds(sw,  (Vec2) {minx, ctry}, (Vec2) {ctrx, ctry});
+    qnode_set_bounds(se,  (Vec2) {ctrx, ctry}, (Vec2) {maxx, maxy});
 
     node->nw = nw;
     node->ne = ne;
@@ -169,13 +169,13 @@ Creature *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
         return NULL;
     }
 
-    if(quad_node_isleaf(node)) {
+    if(qnode_isleaf(node)) {
         if (node->crt->pos.x == pos.x && node->crt->pos.y == pos.y) {
             return node->crt;
         }
     }
 
-    if (quad_node_ispointer(node)) {
+    if (qnode_ispointer(node)) {
         QuadNode *child = _node_quadrant(node, pos);
         if(!child) {
              return NULL;
@@ -188,7 +188,7 @@ Creature *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
 
 // --- public
 
-QuadNode *quad_node_create() {
+QuadNode *qnode_create() {
     QuadNode *node = malloc(sizeof(QuadNode));
     if (!node) {
         LOG_ERROR("failed to allaocate memeory for QuadNode");
@@ -211,49 +211,49 @@ QuadNode *quad_node_create() {
     return node;
 }
 
-void quad_node_destroy(QuadNode *node) {
+void qnode_destroy(QuadNode *node) {
     if (!node) {
         return;
     }
     if (node->nw) {
-        quad_node_destroy(node->nw);
+        qnode_destroy(node->nw);
     }
     if (node->ne) {
-        quad_node_destroy(node->ne);
+        qnode_destroy(node->ne);
     }
     if (node->sw) {
-        quad_node_destroy(node->sw);
+        qnode_destroy(node->sw);
     }
     if (node->se) {
-        quad_node_destroy(node->se);
+        qnode_destroy(node->se);
     }
 
     crt_destroy(node->crt);
     freez(node);
 }
 
-int quad_node_isleaf(QuadNode *node) {
+int qnode_isleaf(QuadNode *node) {
     return node->crt != NULL;
 }
 
 // TODO rename
-int quad_node_ispointer(QuadNode *node) {
+int qnode_ispointer(QuadNode *node) {
   return node->nw != NULL
       && node->ne != NULL
       && node->sw != NULL
       && node->se != NULL
-      && !quad_node_isleaf(node);
+      && !qnode_isleaf(node);
 }
 
-int quad_node_isempty(QuadNode *node) {
+int qnode_isempty(QuadNode *node) {
   return node->nw == NULL
       && node->ne == NULL
       && node->sw == NULL
       && node->se == NULL
-      && !quad_node_isleaf(node);
+      && !qnode_isleaf(node);
 }
 
-void quad_node_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
+void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
     node->self_nw =  nw;
     node->self_se =  se;
 
@@ -264,20 +264,20 @@ void quad_node_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
 /**
  * recusively walk trough a quad node's children and apply on before (recusing) and on after call backs
  */
-void quad_node_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) {
+void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) {
   (*descent)(node);
 
   if(node->nw != NULL) {
-      quad_node_walk(node->nw, descent, ascent);
+      qnode_walk(node->nw, descent, ascent);
   }
   if(node->ne != NULL) {
-      quad_node_walk(node->ne, descent, ascent);
+      qnode_walk(node->ne, descent, ascent);
   }
   if(node->sw != NULL) {
-      quad_node_walk(node->sw, descent, ascent);
+      qnode_walk(node->sw, descent, ascent);
   }
   if(node->se != NULL) {
-      quad_node_walk(node->se, descent, ascent);
+      qnode_walk(node->se, descent, ascent);
   }
 
   (*ascent)(node);
@@ -287,7 +287,7 @@ void quad_node_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*asce
 // QuadTree
 ////
 
-QuadTree *quad_tree_create(Vec2 window_nw, Vec2 window_se) {
+QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se) {
     assert(window_nw.x < window_se.x);
     assert(window_nw.y < window_se.y);
 
@@ -296,26 +296,26 @@ QuadTree *quad_tree_create(Vec2 window_nw, Vec2 window_se) {
         return NULL;
     }
 
-    tree->root = quad_node_create(-1);
+    tree->root = qnode_create(-1);
     if (!tree->root) {
         return NULL;
     }
 
-    quad_node_set_bounds(tree->root, window_nw, window_se);
+    qnode_set_bounds(tree->root, window_nw, window_se);
     tree->length = 0;
 
     return tree;
 }
 
-void quad_tree_destroy(QuadTree *tree) {
+void qtree_destroy(QuadTree *tree) {
     if (!tree) {
         return;
     }
-    quad_node_destroy(tree->root);
+    qnode_destroy(tree->root);
     freez(tree);
 }
 
-int quad_tree_insert(QuadTree *tree, Creature *crt) {
+int qtree_insert(QuadTree *tree, Creature *crt) {
     if (!tree || !crt) {
         return QUAD_FAILED;
     }
@@ -333,7 +333,7 @@ int quad_tree_insert(QuadTree *tree, Creature *crt) {
     return status;
 }
 
-Creature *quad_tree_find(QuadTree *tree, Vec2 pos) {
+Creature *qtree_find(QuadTree *tree, Vec2 pos) {
     if (!tree) {
         return NULL;
     }
@@ -368,7 +368,7 @@ void _print_desc(QuadNode *node) {
         node->self_se.x, node->self_se.y,
         (node->nw) ? (char*) &node->nw : "<NULL>", (node->ne) ? (char*) &node->ne : "<NULL>", (node->sw) ? (char*) &node->sw : "<NULL>", (node->se) ? (char*) &node->se : "<NULL>",
         (node->crt) ? node->crt->id : -1,
-        quad_node_isempty(node), quad_node_isleaf(node), quad_node_ispointer(node)
+        qnode_isempty(node), qnode_isleaf(node), qnode_ispointer(node)
     );
 }
 
@@ -378,16 +378,16 @@ void _print_asc(QuadNode *node) {
 
 // --- public
 
-void quad_tree_print(QuadTree *tree) {
+void qtree_print(QuadTree *tree) {
     if (!tree) {
         printf("<NULL>");
         return;
     }
-    quad_node_walk(tree->root, _print_asc, _print_desc);
+    qnode_walk(tree->root, _print_asc, _print_desc);
     printf("\n");
 }
 
-void quad_node_print(QuadNode *node) {
+void qnode_print(QuadNode *node) {
     if (!node) {
         printf("<NULL>");
         return;
@@ -415,6 +415,6 @@ void quad_node_print(QuadNode *node) {
     printf(",\n  se: ");
     _print_short(node->se);
 
-    printf(",\n  isempty: %d, isleaf: %d, ispointer: %d", quad_node_isempty(node), quad_node_isleaf(node), quad_node_ispointer(node));
+    printf(",\n  isempty: %d, isleaf: %d, ispointer: %d", qnode_isempty(node), qnode_isleaf(node), qnode_ispointer(node));
     printf("\n}\n");
 }
