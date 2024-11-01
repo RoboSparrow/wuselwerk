@@ -117,7 +117,6 @@ int main (int argc, char **argv) {
     window = ui_init_window(&app, world);
     renderer = ui_init_renderer(&app, window);
     font = ui_init_font(&app);
-    world_print(stderr, world);
 
     Creature *crt;
     CrtType type;
