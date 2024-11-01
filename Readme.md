@@ -1,4 +1,4 @@
-# WimmelSim
+# Wuselwerk
 
 Sandbox particle simulation using [SDL](https://www.libsdl.org/)
 W.I.P.
@@ -16,15 +16,14 @@ sudo apt install libsdl2-dev libsdl2-ttf-dev
 ### Build
 
 ```
-make clean
-make
-./wim
+make clean && make
+./wusel
 ```
 
 ### Usage
 
 ```bash
-./wim -h
+./usel -h
 ```
 ---
 
