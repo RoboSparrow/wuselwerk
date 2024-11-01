@@ -54,13 +54,20 @@ typedef struct Creature {
 
 #define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
 
+// Live Cycle
+
 Creature *crt_create(unsigned int id);
 Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos);
 void crt_destroy(Creature *crt);
 
+int crt_random_targ(Creature *crt, App *app, float max_radius);
+
+// Debug
+
 void crt_print(FILE *fp, Creature *crt);
 
-int crt_random_targ(Creature *crt, App *app, float max_radius);
+// Main loop
+
 int crt_update(Creature *crt, App *app);
 int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font);
 

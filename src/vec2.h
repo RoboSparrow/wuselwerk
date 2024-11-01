@@ -13,7 +13,7 @@ typedef struct Vec2 {
     float y;
 } Vec2;
 
-#define VEC2_PRINT(fp,v) fprintf(fp, "{x:%f, y:%f}", v.x, v.y)
+#define VEC2_PRINT(fp,v) fprintf(fp, "{x:%.2f, y:%.2f}", v.x, v.y)
 
 // core
 

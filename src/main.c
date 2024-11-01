@@ -1,6 +1,6 @@
 /**
- * clear && make clean && make && ./wim
- * clear && make clean && make && ./wim -c 1 -f 2
+ * clear && make clean && make && ./wusel
+ * clear && make clean && make && ./wusel -c 1 -f 2
  */
 
 #include <stdio.h>
@@ -92,19 +92,13 @@ int main (int argc, char **argv) {
 
     int prev = SDL_GetTicks();
 
-    World world = {
-        .nw = {0},
-        .se = {DEFAULT_WIDTH, DEFAULT_HEIGHT},
-        .len=rand_range(1, 10),
-        .population={0}
-    };
+    World *world = world_create(rand_range(1, 25), (Vec2){0}, (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT});
 
-    World *w = &world; // TODO remove after properly initalising world
     App app =  {
         .name="Test window",
         .window={
             SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            WORLD_WIDTH(w), WORLD_HEIGHT(w)
+            WORLD_WIDTH(world), WORLD_HEIGHT(world)
         },
 
         .bg_color={0, 0, 0, SDL_ALPHA_OPAQUE},
@@ -118,17 +112,19 @@ int main (int argc, char **argv) {
         .paused=0,
     };
 
-    configure(&app, &world, argc, argv);
-    window = ui_init_window(&app);
+    configure(&app, world, argc, argv);
+
+    window = ui_init_window(&app, world);
     renderer = ui_init_renderer(&app, window);
     font = ui_init_font(&app);
+    world_print(stderr, world);
 
     Creature *crt;
     CrtType type;
     char name[CRT_NAME_LEN];
     Vec2 pos = {0};
 
-    for (int i = 0; i < world.len; i++) {
+    for (int i = 0; i < world->len; i++) {
         rand_str(name, CRT_NAME_LEN);
         type = rand_range(1, CRT_TYPE_MAX - 1);
         pos.x = rand_range_f(0, app.window.w);
@@ -137,7 +133,7 @@ int main (int argc, char **argv) {
         crt = crt_birth(i, name, type, pos);
         crt->agility = rand_range_f(0, 1.f);
         crt_random_targ(crt, &app, 100.f); // TODO radius perception?
-        world.population[i] = crt;
+        world->population[i] = crt;
 
         // crt_print(stdout, crt); // dev
         crt_draw(crt, &app, renderer, font);
@@ -166,8 +162,8 @@ int main (int argc, char **argv) {
         }
 
         if (app.paused) {
-            world_update(&app);
-            world_draw(&app, renderer, font);
+            world_update(&app, world);
+            world_draw(&app, world, renderer, font);
             SDL_RenderPresent(renderer);
 
             continue;
@@ -180,12 +176,12 @@ int main (int argc, char **argv) {
         SDL_SetRenderDrawColor(renderer, app.bg_color.r, app.bg_color.g, app.bg_color.b, app.bg_color.a);
         SDL_RenderClear(renderer);
 
-        world_update(&app);
-        world_draw(&app, renderer, font);
+        world_update(&app, world);
+        world_draw(&app, world, renderer, font);
 
-        for (int i = 0; i < world.len; i++) {
-            crt_update(world.population[i], &app);
-            crt_draw(world.population[i], &app, renderer, font);
+        for (int i = 0; i < world->len; i++) {
+            crt_update(world->population[i], &app);
+            crt_draw(world->population[i], &app, renderer, font);
         }
 
         // render changes
@@ -193,8 +189,9 @@ int main (int argc, char **argv) {
         prev = SDL_GetTicks();
     } // while
 
-    world_destroy(&world);
+    world_destroy(world);
     ui_exit(&app, window, renderer, font);
+    app_destroy(&app);
 
   return 0;
 }

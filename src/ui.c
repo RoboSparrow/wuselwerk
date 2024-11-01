@@ -6,10 +6,11 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "app.h"
+#include "world.h"
 #include "ui.h"
 
 
-SDL_Window *ui_init_window(App *app) {
+SDL_Window *ui_init_window(App *app, World *world) {
     SDL_Window *win = NULL;
 
     int res = SDL_Init(SDL_INIT_VIDEO);
@@ -18,10 +19,10 @@ SDL_Window *ui_init_window(App *app) {
     /* Creates a SDL window */
     win = SDL_CreateWindow(
         app->name,
-        (int) app->window.x,
-        (int) app->window.y,
-        (int) app->window.w,
-        (int) app->window.h,
+        (int) world->nw.x,
+        (int) world->nw.y,
+        (int) WORLD_WIDTH(world),
+        (int) WORLD_HEIGHT(world),
     0);
     EXIT_IF_F(win == NULL, "SDL window failed to initialise: %s\n", SDL_GetError());
 
@@ -94,7 +95,7 @@ void ui_exit(App *app, SDL_Window *window, SDL_Renderer *renderer, TTF_Font *fon
  * Render app statusbar
  */
 
-int ui_draw_status_bar(App *app, SDL_Renderer *renderer, TTF_Font *font) {
+int ui_draw_status_bar(App *app, World *world, SDL_Renderer *renderer, TTF_Font *font) {
     if (!app || !renderer || !font ) {
         return -1;
     }
@@ -115,7 +116,7 @@ int ui_draw_status_bar(App *app, SDL_Renderer *renderer, TTF_Font *font) {
 
     SDL_QueryTexture(texture, NULL, NULL, &trect.w, &trect.h);
     trect.x = 5;
-    trect.y = app->window.h - trect.h -5;
+    trect.y = WORLD_HEIGHT(world) - trect.h -5;
 
     if (SDL_RenderCopy(renderer, texture, NULL, &trect)) {
         LOG_ERROR_F("error rendering status bar (1): %s\n", SDL_GetError());
@@ -134,8 +135,8 @@ int ui_draw_status_bar(App *app, SDL_Renderer *renderer, TTF_Font *font) {
 
     SDL_QueryTexture(texture, NULL, NULL, &trect.w, &trect.h);
 
-    trect.x = (app->window.w - trect.w) - 5;
-    trect.y = app->window.h - trect.h -5;
+    trect.x = (WORLD_WIDTH(world)- trect.w) - 5;
+    trect.y = (WORLD_HEIGHT(world) - trect.h) - 5;
 
     if (SDL_RenderCopy(renderer, texture, NULL, &trect)) {
         LOG_ERROR_F("error rendering status bar (2): %s\n", SDL_GetError());

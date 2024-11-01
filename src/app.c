@@ -23,3 +23,10 @@ int app_get_version(App *app) {
     fclose(fp);
     return 0;
 }
+
+void app_destroy(App *app) {
+    if (!app) {
+        return;
+    }
+    // TODO placeholder for planned allocation
+}

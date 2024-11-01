@@ -21,8 +21,8 @@ const char crt_status_names[][32] = {"CRT_STATUS_NONE", "CRT_STATUS_DEAD", "CRT_
 
 Creature *crt_create(unsigned int id) {
     // Creature crt = { id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}  };
-    Creature *crt = calloc(sizeof(struct Creature), 1);
-    EXIT_IF_F(crt == NULL, "error allocation memeory for crit %d", id);
+    Creature *crt = calloc(sizeof(Creature), 1);
+    EXIT_IF_F(crt == NULL, "failed to allocate memory for creature %d", id);
 
     crt->id = id;
     crt->pos = (Vec2){CRT_POS_NONE, CRT_POS_NONE};
@@ -65,6 +65,9 @@ int crt_random_targ(Creature *crt, App *app, float max_radius) {
     return 0;
 }
 
+/**
+ * Main loop: update
+ */
 int crt_update(Creature *crt, App *app) {
     if (!crt || !app) {
         return 1;
@@ -88,6 +91,9 @@ int crt_update(Creature *crt, App *app) {
     return 0;
 }
 
+/**
+ * Main loop: draw
+ */
 void crt_print(FILE *fp, Creature *crt) {
     if(!fp) {
         return;

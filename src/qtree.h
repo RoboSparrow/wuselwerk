@@ -16,6 +16,7 @@
 #define QUAD_INSERTED 0
 #define QUAD_REPLACED 2
 
+typedef struct Creature Creature; // forward declaration (TODO, why neccessary here?)
 
 ////
 //   Quadrants
@@ -74,7 +75,7 @@ int qnode_ispointer(QuadNode *node);
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se);
 void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) ;
 
-void qtree_print(QuadTree *tree);
-void qnode_print(QuadNode *node);
+void qtree_print(FILE *fp, QuadTree *tree);
+void qnode_print(FILE *fp, QuadNode *node);
 
 #endif

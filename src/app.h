@@ -26,4 +26,6 @@ typedef struct App {
 
 int app_get_version(App *app);
 
+void app_destroy(App *app);
+
 #endif

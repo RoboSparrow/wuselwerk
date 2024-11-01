@@ -147,8 +147,8 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
     /*                         nw                     se              */
     qnode_set_bounds(nw,  (Vec2) {minx, miny}, (Vec2) {ctrx, ctry});
     qnode_set_bounds(ne,  (Vec2) {ctrx, miny}, (Vec2) {maxx, ctry});
-    qnode_set_bounds(sw,  (Vec2) {minx, ctry}, (Vec2) {ctrx, ctry});
     qnode_set_bounds(se,  (Vec2) {ctrx, ctry}, (Vec2) {maxx, maxy});
+    qnode_set_bounds(sw,  (Vec2) {minx, ctry}, (Vec2) {ctrx, maxy});
 
     node->nw = nw;
     node->ne = ne;
@@ -228,7 +228,11 @@ void qnode_destroy(QuadNode *node) {
         qnode_destroy(node->se);
     }
 
-    crt_destroy(node->crt);
+    // !!!! We  don not manage the memory of the item pointer here !!!!
+    // crt_destroy(node->crt);
+
+    node->crt = NULL;
+
     freez(node);
 }
 
@@ -344,25 +348,15 @@ Creature *qtree_find(QuadTree *tree, Vec2 pos) {
 // debug
 ////
 
-void _print_short(QuadNode *node) {
-    if (!node) {
-        printf("<NULL>");
-        return;
-    }
-    printf("{self_nw: {%f, %f}, self_se: {%f, %f}, ", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y);
-    if (node->crt) {
-        printf("crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
-    } else {
-        printf("crt: <NULL>}");
-    }
-}
+FILE *_out = NULL;
 
 void _print_desc(QuadNode *node) {
     if (!node) {
-        printf("<NULL>");
+        fprintf(_out, "<NULL>");
         return;
     }
-    printf(
+    fprintf(
+        _out,
         "{nw.x:%f, nw.y:%f, se.x:%f, se.y:%f , nw: %s, ne: %s, sw: %s, sw: %s, crt: %d, isempty: %d, isleaf: %d, ispointer: %d}: ",
         node->self_nw.x, node->self_nw.y,
         node->self_se.x, node->self_se.y,
@@ -373,48 +367,31 @@ void _print_desc(QuadNode *node) {
 }
 
 void _print_asc(QuadNode *node) {
-  printf("\n");
+  fprintf(_out, "\n");
 }
 
 // --- public
 
-void qtree_print(QuadTree *tree) {
+void qtree_print(FILE *fp, QuadTree *tree) {
     if (!tree) {
-        printf("<NULL>");
+        fprintf(fp, "<NULL>");
         return;
     }
+    _out = fp;
     qnode_walk(tree->root, _print_asc, _print_desc);
     printf("\n");
+    _out = NULL;
 }
 
-void qnode_print(QuadNode *node) {
+void qnode_print(FILE *fp, QuadNode *node) {
     if (!node) {
-        printf("<NULL>");
+        fprintf(fp, "<NULL>");
         return;
     }
-    printf("{");
-
-    printf("\n  self_nw: {%f, %f}", node->self_nw.x, node->self_nw.y);
-    printf(",\n  self_se: {%f, %f}", node->self_se.x, node->self_se.y);
-
-    printf(",\n  width: %f", node->self_width);
-    printf(",\n  height: %f", node->self_height);
-
+    fprintf(fp, "{self_nw: {%f, %f}, self_se: {%f, %f}, ", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y);
     if (node->crt) {
-        printf(",\n  crt: (%d) {%f, %f}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
+        fprintf(fp, "crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
     } else {
-        printf(",\n  crt: <NULL>");
+        fprintf(fp, "crt: <NULL>}");
     }
-
-    printf(",\n  nw: ");
-    _print_short(node->nw);
-    printf(",\n  ne: ");
-    _print_short(node->ne);
-    printf(",\n  sw: ");
-    _print_short(node->sw);
-    printf(",\n  se: ");
-    _print_short(node->se);
-
-    printf(",\n  isempty: %d, isleaf: %d, ispointer: %d", qnode_isempty(node), qnode_isleaf(node), qnode_ispointer(node));
-    printf("\n}\n");
 }
