@@ -11,7 +11,9 @@
 // QuadNode
 ////
 
-static int _node_split(QuadTree *tree, QuadNode *node); // forward declaration
+// forward declarations
+static int _node_split(QuadTree *tree, QuadNode *node);
+void qnode_print(FILE *fp, QuadNode *node);
 
 /**
  * Checks if a pos is with an node boundary.
@@ -107,10 +109,10 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
         return QUAD_FAILED;
     }
 
-    QuadNode *nw = qnode_create();
-    QuadNode *ne = qnode_create();
-    QuadNode *sw = qnode_create();
-    QuadNode *se = qnode_create();
+    QuadNode *nw = qnode_create(node);
+    QuadNode *ne = qnode_create(node);
+    QuadNode *sw = qnode_create(node);
+    QuadNode *se = qnode_create(node);
 
     if (!nw || !ne || !sw || !se) {
         return QUAD_FAILED;
@@ -188,12 +190,14 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
 
 // --- public
 
-QuadNode *qnode_create() {
+QuadNode *qnode_create(QuadNode *parent) {
     QuadNode *node = malloc(sizeof(QuadNode));
     if (!node) {
         LOG_ERROR("failed to allaocate memeory for QuadNode");
         return NULL;
     }
+
+    node->parent = parent;
 
     node->ne = NULL;
     node->nw = NULL;
@@ -300,7 +304,7 @@ QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se) {
         return NULL;
     }
 
-    tree->root = qnode_create(-1);
+    tree->root = qnode_create(NULL);
     if (!tree->root) {
         return NULL;
     }
@@ -351,19 +355,7 @@ QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
 FILE *_out = NULL;
 
 void _print_desc(QuadNode *node) {
-    if (!node) {
-        fprintf(_out, "<NULL>");
-        return;
-    }
-    fprintf(
-        _out,
-        "{nw.x:%f, nw.y:%f, se.x:%f, se.y:%f , nw: %s, ne: %s, sw: %s, sw: %s, crt: %d, isempty: %d, isleaf: %d, ispointer: %d}: ",
-        node->self_nw.x, node->self_nw.y,
-        node->self_se.x, node->self_se.y,
-        (node->nw) ? (char*) &node->nw : "<NULL>", (node->ne) ? (char*) &node->ne : "<NULL>", (node->sw) ? (char*) &node->sw : "<NULL>", (node->se) ? (char*) &node->se : "<NULL>",
-        (node->crt) ? node->crt->id : -1,
-        qnode_isempty(node), qnode_isleaf(node), qnode_ispointer(node)
-    );
+    qnode_print(_out, node);
 }
 
 void _print_asc(QuadNode *node) {
@@ -389,6 +381,8 @@ void qnode_print(FILE *fp, QuadNode *node) {
         return;
     }
     fprintf(fp, "{self_nw: {%f, %f}, self_se: {%f, %f}, ", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y);
+    fprintf(fp, "parent: '%c', ", (node->parent) ? 'y' : '-');
+    fprintf(fp, "nw: '%c', sw: '%c', se: '%c', nw: '%c', ", (node->nw) ? 'y' : '-', (node->sw) ? 'y' : '-', (node->se) ? 'y' : '-', (node->ne) ? 'y' : '-');
     if (node->crt) {
         fprintf(fp, "crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
     } else {

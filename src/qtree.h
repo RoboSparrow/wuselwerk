@@ -39,6 +39,8 @@ typedef struct Creature Creature; // forward declaration (TODO, why neccessary h
 ////
 
 typedef struct QuadNode {
+    struct QuadNode *parent;
+
     struct QuadNode *ne;
     struct QuadNode *nw;
     struct QuadNode *se;
@@ -65,7 +67,7 @@ void qtree_destroy(QuadTree *tree);
 int qtree_insert(QuadTree *tree, Creature *crt);
 QuadNode *qtree_find(QuadTree *tree, Vec2 pos);
 
-QuadNode *qnode_create();
+QuadNode *qnode_create(QuadNode *parent);
 void qnode_destroy(QuadNode *node);
 
 int qnode_isempty(QuadNode *node);

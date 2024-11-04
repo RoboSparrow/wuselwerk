@@ -37,11 +37,12 @@ static void test_node() {
     DESCRIBE("node");
     QuadNode *node;
 
-    node = qnode_create();
+    node = qnode_create(NULL);
 
     assert(!qnode_isleaf(node));
     assert(qnode_isempty(node));
     assert(!qnode_ispointer(node));
+    assert(node->parent == NULL);
 
     qnode_destroy(node);
     DONE();
@@ -51,7 +52,7 @@ static void test_node_bounds() {
     DESCRIBE("bounds");
     QuadNode *node;
 
-    node = qnode_create();
+    node = qnode_create(NULL);
 
     qnode_set_bounds(node, (Vec2) {1.f, 2.f}, (Vec2) {2.f, 4.f});
     assert(node->self_nw.x == 1.0);
@@ -227,6 +228,90 @@ static void test_tree_find() {
     DONE();
 }
 
+static void test_node_parent() {
+    DESCRIBE("parent");
+    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+
+    Creature *crt1 = crt_create(111);
+    Creature *crt2 = crt_create(222);
+
+    // a nested tree with three levels
+    crt1->pos = (Vec2) {8.f, 2.f};
+    crt2->pos = (Vec2) {9.f, 1.f};
+
+    QuadNode *node, *parent;
+    int res;
+    Vec2 search;
+
+    {
+        // insert nodes
+        res = qtree_insert(tree, crt1);
+        assert(res == QUAD_INSERTED);
+
+        res = qtree_insert(tree, crt2);
+        assert(res == QUAD_INSERTED);
+
+        assert(tree->length == 2);
+    } {
+        // find first parent
+        parent = tree->root;
+        node = tree->root->ne;
+
+        assert(node != NULL);
+        assert(node->parent != NULL);
+
+        assert(node->parent->self_nw.x == parent->self_nw.x);
+        assert(node->parent->self_se.y == parent->self_se.y);
+    } {
+        // find second parent
+        parent = tree->root->ne;
+        node   = tree->root->ne->ne;
+
+        assert(node != NULL);
+        assert(node->parent != NULL);
+
+        assert(node->parent->self_nw.x == parent->self_nw.x);
+        assert(node->parent->self_se.y == parent->self_se.y);
+
+        //qnode_print(stderr, node);
+    } {
+        // find first leaf
+        parent = tree->root->ne->ne;
+        node   = tree->root->ne->ne->nw;
+
+        assert(node != NULL);
+        assert(node->parent != NULL);
+
+        assert(node->parent->self_nw.x == parent->self_nw.x);
+        assert(node->parent->self_se.y == parent->self_se.y);
+
+        // crt
+        assert(node->crt != NULL);
+        assert(node->crt->id == crt1->id);
+
+        //qnode_print(stderr, node);
+    } {
+        // find second leaf
+        parent = tree->root->ne->ne;
+        node   = tree->root->ne->ne->ne;
+
+        assert(node != NULL);
+        assert(node->parent != NULL);
+
+        assert(node->parent->self_nw.x == parent->self_nw.x);
+        assert(node->parent->self_se.y == parent->self_se.y);
+
+        // crt
+        assert(node->crt != NULL);
+        assert(node->crt->id == crt2->id);
+
+        //qnode_print(stderr, node);
+    }
+    qtree_print(stderr, tree);
+    qtree_destroy(tree);
+    DONE();
+}
+
 void test_qtree(int argc, char **argv) {
     test_tree();
     test_node();
@@ -235,6 +320,7 @@ void test_qtree(int argc, char **argv) {
     test_tree_insert_outside();
     test_tree_insert_replace();
     test_tree_find();
+    test_node_parent();
 
     return;
 }
