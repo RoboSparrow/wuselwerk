@@ -1,7 +1,6 @@
 # Wuselwerk
 
-Sandbox particle simulation using [SDL](https://www.libsdl.org/)
-W.I.P.
+W.I.P. Sandbox simulation using [SDL](https://www.libsdl.org/)
 
 ---
 
@@ -23,7 +22,7 @@ make clean && make
 ### Usage
 
 ```bash
-./usel -h
+./wusel -h
 ```
 ---
 
