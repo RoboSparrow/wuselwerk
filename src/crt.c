@@ -8,6 +8,7 @@
 #include "world.h"
 #include "app.h"
 #include "crt.h"
+#include "qtree.h" // toto remove
 #include "vec2.h"
 #include "utils.h"
 
@@ -68,8 +69,8 @@ int crt_random_targ(Creature *crt, App *app, float max_radius) {
 /**
  * Main loop: update
  */
-int crt_update(Creature *crt, App *app) {
-    if (!crt || !app) {
+int crt_update(Creature *crt, App *app, World *world) {
+    if (!crt || !app || !world) {
         return 1;
     }
 
@@ -100,6 +101,7 @@ void crt_print(FILE *fp, Creature *crt) {
     }
     if (!crt) {
         fprintf(fp, "<NULL>\n");
+        return;
     }
 
     fprintf(fp,
@@ -125,8 +127,8 @@ void crt_print(FILE *fp, Creature *crt) {
     );
 }
 
-int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font) {
-    if (!crt || !app || !renderer || !font) {
+int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font) {
+    if (!crt || !app || !world || !renderer || !font) {
         return -1;
     }
 
@@ -134,8 +136,7 @@ int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font) {
     float x = crt->pos.x - crt->w / 2;
     float y = crt->pos.y - crt->h / 2;
 
-    // 2. draw pos
-    // todo draw rects from .x y (-w/2)
+    // 1. draw pos
 
     SDL_Rect prect = { (int) x, (int) y, (int) crt->w, (int) crt->h };
 
@@ -151,7 +152,8 @@ int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font) {
     }
     ret = SDL_RenderFillRect(renderer, &prect);
 
-    // 1. draw targ;
+    // 2. draw targ;
+
     if(vec2_equals(crt->pos, crt->targ)) {
         return ret;
     }

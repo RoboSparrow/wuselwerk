@@ -17,6 +17,7 @@ int app_get_version(App *app) {
     char *res = fgets(app->version, sizeof(app->version), fp);
     if(!res){
         app->version[0] = 0;
+        fclose(fp);
         return -1;
     }
 

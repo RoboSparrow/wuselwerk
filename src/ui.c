@@ -122,6 +122,7 @@ int ui_draw_status_bar(App *app, World *world, SDL_Renderer *renderer, TTF_Font 
         LOG_ERROR_F("error rendering status bar (1): %s\n", SDL_GetError());
         return -1;
     }
+    SDL_DestroyTexture(texture);
 
     // build version
 
@@ -142,4 +143,5 @@ int ui_draw_status_bar(App *app, World *world, SDL_Renderer *renderer, TTF_Font 
         LOG_ERROR_F("error rendering status bar (2): %s\n", SDL_GetError());
         return -1;
     }
+    SDL_DestroyTexture(texture);
 }

@@ -17,6 +17,7 @@
 #define CRT_NAME_LEN 16
 
 typedef struct App App; // forward declaration (TODO, why neccessary here?)
+typedef struct World World; // forward declaration (TODO, why neccessary here?)
 
 typedef enum CrtType {
     CRT_TYPE_NONE,
@@ -68,7 +69,7 @@ void crt_print(FILE *fp, Creature *crt);
 
 // Main loop
 
-int crt_update(Creature *crt, App *app);
-int crt_draw(Creature *crt, App *app, SDL_Renderer *renderer, TTF_Font *font);
+int crt_update(Creature *crt, App *app, World *world);
+int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
 
 #endif
