@@ -8,8 +8,8 @@ CFLAGS=-Wall -Wextra -Werror -Wpedantic -pedantic-errors
 LOPT=-lm
 LOPT+= $(shell pkg-config sdl2 --cflags --libs) -lSDL2_ttf
 
-HEADERS=$(INCDIR)/utils.h $(INCDIR)/vec2.h $(INCDIR)/app.h $(INCDIR)/crt.h $(INCDIR)/world.h $(INCDIR)/qtree.h $(INCDIR)/ui.h
-OBJECTS=$(SRCDIR)/utils.o $(SRCDIR)/vec2.o $(SRCDIR)/app.o $(SRCDIR)/crt.o $(SRCDIR)/world.o $(SRCDIR)/qtree.o $(SRCDIR)/ui.o
+HEADERS=$(INCDIR)/utils.h $(INCDIR)/vec2.h $(INCDIR)/app.h $(INCDIR)/world.h $(INCDIR)/qtree.h $(INCDIR)/ui.h $(INCDIR)/crt.h
+OBJECTS=$(SRCDIR)/utils.o $(SRCDIR)/vec2.o $(SRCDIR)/app.o $(SRCDIR)/world.o $(SRCDIR)/qtree.o $(SRCDIR)/ui.o $(SRCDIR)/crt.o
 
 TESTDIR=tests
 TEST_C=$(wildcard $(TESTDIR)/test.*.c)

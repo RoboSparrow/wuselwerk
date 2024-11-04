@@ -6,10 +6,8 @@
 #include "vec2.h"
 #include "qtree.h"
 #include "app.h"
-#include "world.h"
 
 #define WORLD_POP_MAX 100
-
 
 typedef struct App App; // forward declaration (TODO, why neccessary here?)
 typedef struct Creature Creature; // forward declaration (TODO, why neccessary here?)

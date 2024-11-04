@@ -1,7 +1,3 @@
-/**
- * definitions tests
- */
-
 #ifndef __TEST_H__
 #define __TEST_H__
 
@@ -21,6 +17,5 @@ void test_vec2(int argc, char **argv);
 void test_crt(int argc, char **argv);
 // test.qtree.c
 void test_qtree(int argc, char **argv);
-
 
 #endif
