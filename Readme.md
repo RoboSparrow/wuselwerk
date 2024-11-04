@@ -35,7 +35,5 @@ make clean && make
 
 ## Acknowledgements
 
-[FOSS](https://en.wikipedia.org/wiki/Free_and_open-source_software) makes it possible.
-
  * [Simple Direct Media Layer](https://www.libsdl.org/)
  * [Ubuntu Monospace](https://design.ubuntu.com/font)
