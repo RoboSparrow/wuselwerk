@@ -63,7 +63,7 @@ QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se);
 void qtree_destroy(QuadTree *tree);
 
 int qtree_insert(QuadTree *tree, Creature *crt);
-Creature *qtree_find(QuadTree *tree, Vec2 pos);
+QuadNode *qtree_find(QuadTree *tree, Vec2 pos);
 
 QuadNode *qnode_create();
 void qnode_destroy(QuadNode *node);

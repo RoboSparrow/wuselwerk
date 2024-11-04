@@ -164,14 +164,14 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
  * Find a node for a given position
  * uses same conditions as _node_find()
  */
-Creature *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
+QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
     if (!tree || !node) {
         return NULL;
     }
 
     if(qnode_isleaf(node)) {
         if (node->crt->pos.x == pos.x && node->crt->pos.y == pos.y) {
-            return node->crt;
+            return node;
         }
     }
 
@@ -337,7 +337,7 @@ int qtree_insert(QuadTree *tree, Creature *crt) {
     return status;
 }
 
-Creature *qtree_find(QuadTree *tree, Vec2 pos) {
+QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
     if (!tree) {
         return NULL;
     }

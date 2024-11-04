@@ -191,7 +191,7 @@ static void test_tree_find() {
     crt1->pos = (Vec2) {8.f, 2.f};
     crt2->pos = (Vec2) {1.f, 1.f};
 
-    Creature *crt;
+    QuadNode *node;
     int res;
     Vec2 search;
 
@@ -207,20 +207,20 @@ static void test_tree_find() {
     } {
         // find second non-existing node;
         search = (Vec2){0};
-        crt = qtree_find(tree, search);
-        assert(crt == NULL);
+        node = qtree_find(tree, search);
+        assert(node == NULL);
     } {
         // find second item;
         search = crt2->pos;
-        crt = qtree_find(tree, search);
-        assert(crt != NULL);
-        assert(crt->id == crt2->id);
+        node = qtree_find(tree, search);
+        assert(node != NULL);
+        assert(node->crt->id == crt2->id);
     } {
        //find first item
         search = crt1->pos;
-        crt = qtree_find(tree, search);
-        assert(crt != NULL);
-        assert(crt->id == crt1->id);
+        node = qtree_find(tree, search);
+        assert(node != NULL);
+        assert(node->crt->id == crt1->id);
     }
 
     qtree_destroy(tree);
