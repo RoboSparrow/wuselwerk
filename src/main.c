@@ -135,7 +135,6 @@ int main (int argc, char **argv) {
         world->population[i] = crt;
 
         // crt_print(stdout, crt); // dev
-        //crt_draw(crt, &app, world, renderer, font);
     }
 
     // render changes
