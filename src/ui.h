@@ -16,4 +16,5 @@ void ui_exit(App *app, SDL_Window *window, SDL_Renderer *renderer, TTF_Font *fon
 
 SDL_Texture* ui_render_text(const char *message, SDL_Renderer *renderer, TTF_Font *font, SDL_Color color);
 int ui_draw_status_bar(App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+
 #endif

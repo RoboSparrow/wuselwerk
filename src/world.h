@@ -3,15 +3,15 @@
 
 #include <SDL2/SDL_ttf.h>
 
-#include "vec2.h"
-#include "qtree.h"
 #include "app.h"
+#include "vec2.h"
 
 #define WORLD_POP_MAX 100
 
-typedef struct App App; // forward declaration (TODO, why neccessary here?)
-typedef struct Creature Creature; // forward declaration (TODO, why neccessary here?)
-typedef struct QuadTree QuadTree; // forward declaration (TODO, why neccessary here?)
+// forward declarations
+
+typedef struct Creature Creature;
+typedef struct QuadTree QuadTree;
 
 typedef struct World {
     Vec2 nw;   // north-west corner of the world (min)
@@ -37,4 +37,5 @@ void world_print(FILE *fp, World *world);
 
 int world_update(App *app, World *world);
 int world_draw(App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+
 #endif

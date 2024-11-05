@@ -3,7 +3,6 @@
 
 #include <math.h>
 
-
 /**
  * Cartesian
  */
@@ -49,6 +48,5 @@ typedef struct PVec2 {
 
 Vec2 vec2_polar_to_cartesian(PVec2 p);
 PVec2 vec2_cartesian_to_polar(Vec2 v);
-
 
 #endif

@@ -2,7 +2,6 @@
 #define __APP_H__
 
 #include <SDL2/SDL.h>
-#include "world.h"
 
 #define APP_MAX_FPS 60
 #define APP_BUILD_INFO_PATH "./build"

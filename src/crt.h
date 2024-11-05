@@ -5,6 +5,7 @@
 #include <SDL2/SDL_ttf.h>
 
 #include "app.h"
+#include "world.h"
 #include "vec2.h"
 
 #define CRT_MIN_W 10.f
@@ -15,9 +16,6 @@
 #define CRT_POS_NONE -1000.f
 
 #define CRT_NAME_LEN 16
-
-typedef struct App App; // forward declaration (TODO, why neccessary here?)
-typedef struct World World; // forward declaration (TODO, why neccessary here?)
 
 typedef enum CrtType {
     CRT_TYPE_NONE,
