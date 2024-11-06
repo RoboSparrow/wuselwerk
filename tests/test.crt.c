@@ -8,7 +8,6 @@
 #include "test.h"
 #include "crt.h"
 
-
 void test_crt(int argc, char **argv) {
 
     GROUP("Creature creation");

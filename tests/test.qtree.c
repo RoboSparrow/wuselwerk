@@ -7,7 +7,6 @@
 #include "crt.h"
 #include "qtree.h"
 
-
 static void test_tree() {
     DESCRIBE("tree");
     QuadTree *tree;

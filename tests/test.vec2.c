@@ -7,7 +7,6 @@
 #include "test.h"
 #include "vec2.h"
 
-
 void test_vec2(int argc, char **argv) {
 
     GROUP("vec2_norm()");

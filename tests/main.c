@@ -12,7 +12,6 @@
 
 #include "test.h"
 
-
 enum Sections {
     TEST_NONE,
     TEST_VEC2,
