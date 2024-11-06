@@ -141,7 +141,8 @@ int main (int argc, char **argv) {
     // render changes
     SDL_RenderPresent(renderer);
 
-    CrtList *neighbours = NULL;
+    CrtList *neighbours = crt_list_create(5);
+    EXIT_IF(neighbours == NULL, "failed to allocate memory for CrtList");
 
     while (app.running) {
         while (SDL_PollEvent(&ev) != 0)  {
@@ -183,9 +184,8 @@ int main (int argc, char **argv) {
             crt_update(world->population[i], &app, world);
             crt_draw(world->population[i], &app, world, renderer, font);
 
-            neighbours  = crt_find_neighbours(world->population[i], &app, world);
+            crt_find_neighbours(world->population[i], &app, world, neighbours);
             crt_draw_neighbours(world->population[i], neighbours, &app, world, renderer, font);
-            crt_list_destroy(neighbours);
         }
 
         // render changes
@@ -194,6 +194,7 @@ int main (int argc, char **argv) {
 
     } // while
 
+    crt_list_destroy(neighbours);
     world_destroy(world);
     ui_exit(&app, window, renderer, font);
     app_destroy(&app);

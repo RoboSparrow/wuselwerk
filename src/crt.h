@@ -97,7 +97,7 @@ void crt_list_destroy(CrtList *list);
 // Relationships
 ////
 
-CrtList *crt_find_neighbours(Creature *crt, App *app, World *world);
+CrtList *crt_find_neighbours(Creature *crt, App *app, World *world, CrtList *list);
 int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
 
 #endif

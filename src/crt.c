@@ -226,8 +226,7 @@ void crt_list_reset(CrtList *list) {
     if (!list) {
         return;
     }
-    size_t i = 0;
-    while (i < list->len) {
+    for (size_t i = 0; i < list->len; i++) {
         list->members[i] = NULL;
     }
     list->len = 0;
@@ -245,14 +244,21 @@ void crt_list_destroy(CrtList *list) {
 // Relationships
 ////
 
-CrtList *crt_find_neighbours(Creature *crt,  App *app, World *world) {
+CrtList *crt_find_neighbours(Creature *crt, App *app, World *world, CrtList *list) {
     if (!crt || !app || !world) {
         return NULL;
     }
 
+    if (!list) {
+        list = crt_list_create(5);
+        EXIT_IF(list == NULL, "failed to allocate memory for CrtList");
+    } else {
+        crt_list_reset(list);
+    }
+
     Vec2 nw = { crt->pos.x - crt->perception, crt->pos.y - crt->perception };
     Vec2 se = { crt->pos.x + crt->perception, crt->pos.y + crt->perception };
-    return qtree_find_in_area(world->qtree, crt, nw, se);
+    return qtree_find_in_area(world->qtree, crt, list, nw, se);
 }
 
 int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){

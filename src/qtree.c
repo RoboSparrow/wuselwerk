@@ -423,13 +423,10 @@ QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
     return _node_find(tree, tree->root, pos);
 }
 
-CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, Vec2 nw, Vec2 se) {
-    if (!tree || !crt) {
+CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, CrtList *list, Vec2 nw, Vec2 se) {
+    if (!tree || !crt || !list) {
         return NULL;
     }
-
-    CrtList *list = crt_list_create(5);
-    EXIT_IF(list == NULL, "failed to allocate memory for CrtList");
 
     _node_find_in_area(tree->root, crt, nw, se, list);
     return list;
