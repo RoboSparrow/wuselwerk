@@ -131,6 +131,7 @@ int main (int argc, char **argv) {
 
         crt = crt_birth(i, name, type, pos);
         crt->agility = rand_range_f(0, 1.f);
+        crt->perception = WORLD_WIDTH(world) / 10.f;
         crt_random_targ(crt, &app, 100.f); // TODO radius perception?
         world->population[i] = crt;
 
@@ -139,6 +140,8 @@ int main (int argc, char **argv) {
 
     // render changes
     SDL_RenderPresent(renderer);
+
+    CrtList *neighbours = NULL;
 
     while (app.running) {
         while (SDL_PollEvent(&ev) != 0)  {
@@ -180,11 +183,17 @@ int main (int argc, char **argv) {
         for (int i = 0; i < world->len; i++) {
             crt_update(world->population[i], &app, world);
             crt_draw(world->population[i], &app, world, renderer, font);
+
+            neighbours  = crt_find_neighbours(world->population[i], &app, world);
+            printf("(%d) %f %ld\n", world->population[i]->id, world->population[i]->perception, neighbours->len);
+            crt_draw_neighbours(world->population[i], neighbours, &app, world, renderer, font);
+            crt_list_destroy(neighbours);
         }
 
         // render changes
         SDL_RenderPresent(renderer);
         prev = SDL_GetTicks();
+
     } // while
 
     world_destroy(world);

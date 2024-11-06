@@ -19,6 +19,9 @@
 const char crt_type_names[][32] = {"CRT_TYPE_NONE", "CRT_TYPE_HERBIVORE", "CRT_TYPE_CARNIVORE"};
 const char crt_status_names[][32] = {"CRT_STATUS_NONE", "CRT_STATUS_DEAD", "CRT_STATUS_ALIVE"};
 
+////
+// Crt
+////
 
 Creature *crt_create(unsigned int id) {
     // Creature crt = { id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}  };
@@ -37,9 +40,13 @@ Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos) {
 
     crt->type = type;
     crt->status = CRT_STATUS_ALIVE;
+
     crt->agility = CRT_MIN_AGILITY;
     crt->w = CRT_MIN_W;
     crt->h = CRT_MIN_H; // todo, per type
+
+    crt->perception = CRT_MIN_PERCEPTION;
+
     crt->pos = pos; // valid cp struct!
     crt->targ = pos;
     return crt;
@@ -49,7 +56,6 @@ void crt_destroy(Creature *crt) {
     // provision for future complexities
     freez(crt);
 }
-
 
 int crt_random_targ(Creature *crt, App *app, float max_radius) {
     if (!crt || !app) {
@@ -113,6 +119,7 @@ void crt_print(FILE *fp, Creature *crt) {
         " agility: %f,"
         " width: %f,"
         " height: %f,"
+        " perception: %f,"
         " pos: {x:%f, y:%f},"
         " targ: {x:%f, y:%f}"
         " }\n",
@@ -122,6 +129,7 @@ void crt_print(FILE *fp, Creature *crt) {
         CRT_STATUS_NAME(crt->status),
         crt->agility,
         crt->w, crt->h,
+        crt->perception,
         crt->pos.x, crt->pos.y,
         crt->targ.x, crt->targ.y
     );
@@ -170,4 +178,103 @@ int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_
     // SDL_SetRenderDrawColor(renderer, app->fg_color.r, app->fg_color.g, app->fg_color.b, app->fg_color.a);
 
     return ret;
+}
+
+////
+// CrtList
+////
+
+CrtList *crt_list_create(size_t max) {
+    CrtList *list = malloc(sizeof(CrtList));
+    if (!list) {
+        return NULL;
+    }
+
+    list->len = 0;
+    list->grow = max;
+    list->max = max;
+
+    list->members = calloc(sizeof(Creature*), max);
+    if (!list->members) {
+        freez(list);
+        return NULL;
+    }
+    return list;
+}
+
+CrtList *crt_list_append(CrtList *list, Creature *crt) {
+    if (!list) {
+        return NULL;
+    }
+
+    size_t len = list->len + 1;
+    if (len > list->max) {
+        list->max += list->grow;
+        list->members = realloc(list->members, list->max * sizeof(Creature*));
+        if (!list->members) {
+            freez(list);
+            return NULL;
+        }
+    }
+    list->members[list->len] = crt;
+    list->len = len;
+
+    return list;
+}
+
+void crt_list_reset(CrtList *list) {
+    if (!list) {
+        return;
+    }
+    size_t i = 0;
+    while (i < list->len) {
+        list->members[i] = NULL;
+    }
+    list->len = 0;
+}
+
+void crt_list_destroy(CrtList *list) {
+    if (!list) {
+        return;
+    }
+    freez(list->members); // free list, not the nodes
+    freez(list);
+}
+
+////
+// Relationships
+////
+
+CrtList *crt_find_neighbours(Creature *crt,  App *app, World *world) {
+    if (!crt || !app || !world) {
+        return NULL;
+    }
+
+    Vec2 nw = { crt->pos.x - crt->perception, crt->pos.y - crt->perception };
+    Vec2 se = { crt->pos.x + crt->perception, crt->pos.y + crt->perception };
+    return qtree_find_in_area(world->qtree, crt, nw, se);
+}
+
+int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){
+    if (!crt || !list || !app || !world || !renderer || !font) {
+        return -1;
+    }
+
+    // 1. draw neighbour area rect
+    SDL_SetRenderDrawColor(renderer, 0, 0, 125, 255);
+    SDL_Rect rect = {
+        (int) (crt->pos.x - crt->perception / 2),
+        (int) (crt->pos.y - crt->perception / 2),
+        (int) crt->perception,
+        (int) crt->perception
+    };
+    SDL_RenderDrawRect(renderer, &rect);
+
+    // 4. draw neighbour relationships
+    SDL_SetRenderDrawColor(renderer, 125, 0, 0, 255);
+    for (size_t i = 0; i < list->len; i++) {
+        SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) list->members[i]->pos.x, (int) list->members[i]->pos.y);
+    }
+
+    return 0;
 }

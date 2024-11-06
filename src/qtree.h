@@ -79,4 +79,6 @@ void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(
 void qtree_print(FILE *fp, QuadTree *tree);
 void qnode_print(FILE *fp, QuadNode *node);
 
+CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, Vec2 nw, Vec2 se);
+
 #endif

@@ -321,6 +321,5 @@ void test_qtree(int argc, char **argv) {
     test_tree_insert_replace();
     test_tree_find();
     test_node_parent();
-
     return;
 }
