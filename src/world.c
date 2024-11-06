@@ -134,6 +134,7 @@ int world_draw(App *app, World *world, SDL_Renderer *renderer, TTF_Font *font) {
 
     int res = 0;
 
+    // draw quads
     if (world->qtree) {
         SDL_SetRenderDrawColor(renderer, 50, 50, 50, 255);
         _renderer = renderer;

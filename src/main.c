@@ -83,7 +83,6 @@ static void configure(App *app, World *world, int argc, char **argv) {
     }
 }
 
-
 int main (int argc, char **argv) {
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -118,6 +117,9 @@ int main (int argc, char **argv) {
     renderer = ui_init_renderer(&app, window);
     font = ui_init_font(&app);
 
+    float ww = WORLD_WIDTH(world);
+    float wh = WORLD_HEIGHT(world);
+
     Creature *crt;
     CrtType type;
     char name[CRT_NAME_LEN];
@@ -131,10 +133,9 @@ int main (int argc, char **argv) {
 
         crt = crt_birth(i, name, type, pos);
         crt->agility = rand_range_f(0, 1.f);
-        crt->perception = WORLD_WIDTH(world) / 10.f;
+        crt->perception = (ww > wh) ? wh / 10.f : ww / 10.f;
         crt_random_targ(crt, &app, 100.f); // TODO radius perception?
         world->population[i] = crt;
-
         // crt_print(stdout, crt); // dev
     }
 
@@ -166,7 +167,6 @@ int main (int argc, char **argv) {
             world_update(&app, world);
             world_draw(&app, world, renderer, font);
             SDL_RenderPresent(renderer);
-
             continue;
         }
 
@@ -185,7 +185,6 @@ int main (int argc, char **argv) {
             crt_draw(world->population[i], &app, world, renderer, font);
 
             neighbours  = crt_find_neighbours(world->population[i], &app, world);
-            printf("(%d) %f %ld\n", world->population[i]->id, world->population[i]->perception, neighbours->len);
             crt_draw_neighbours(world->population[i], neighbours, &app, world, renderer, font);
             crt_list_destroy(neighbours);
         }

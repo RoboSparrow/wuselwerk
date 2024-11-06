@@ -188,6 +188,83 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
     return NULL;
 }
 
+
+static int _node_within_area(QuadNode *node, Vec2 nw, Vec2 se) {
+    return node != NULL
+        && node->self_nw.x >= nw.x
+        && node->self_se.x <= se.x
+        && node->self_nw.y >= nw.y
+        && node->self_se.y <= se.y;
+}
+
+static int _node_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
+    return node != NULL
+        && node->self_nw.x < se.x
+        && node->self_se.x >= nw.x
+        && node->self_nw.y < se.y
+        && node->self_se.y >= nw.y;
+}
+
+static void _node_collect(QuadNode *node, CrtList *list) {
+    if (!node || !list) {
+        return;
+    }
+
+    crt_list_append(list, node->crt);
+
+    if (node->nw) {
+        _node_collect(node->nw, list);
+    }
+    if (node->ne) {
+        _node_collect(node->nw, list);
+    }
+    if (node->se) {
+        _node_collect(node->nw, list);
+    }
+    if (node->sw) {
+        _node_collect(node->nw, list);
+    }
+}
+
+static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, CrtList *list) {
+    if (!node || !crt) {
+        return;
+    }
+
+    // this node does not interesect with the search boundary
+    // stop searching this branch
+    if (!_node_overlaps_area(node, nw, se)) {
+        return;
+    }
+
+    if(qnode_isleaf(node)) {
+        // is the home node of crt
+        if (node->crt->id == crt->id) {
+            return;
+        }
+        // if node is within the search boundary,
+        // collect all children without further checks
+        if(_node_within_area(node, nw, se)) {
+            _node_collect(node, list);
+            return;
+        }
+        return;
+    }
+
+    if (node->nw) {
+        _node_find_in_area(node->nw, crt, nw, se, list);
+    }
+    if (node->ne) {
+        _node_find_in_area(node->ne, crt, nw, se, list);
+    }
+    if (node->se) {
+        _node_find_in_area(node->se, crt, nw, se, list);
+    }
+    if (node->sw) {
+        _node_find_in_area(node->sw, crt, nw, se, list);
+    }
+}
+
 // --- public
 
 QuadNode *qnode_create(QuadNode *parent) {
@@ -236,7 +313,6 @@ void qnode_destroy(QuadNode *node) {
     // crt_destroy(node->crt);
 
     node->crt = NULL;
-
     freez(node);
 }
 
@@ -264,7 +340,6 @@ int qnode_isempty(QuadNode *node) {
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
     node->self_nw =  nw;
     node->self_se =  se;
-
     node->self_width  = fabs(nw.x - se.x);
     node->self_height = fabs(nw.y - se.y);
 }
@@ -348,6 +423,18 @@ QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
     return _node_find(tree, tree->root, pos);
 }
 
+CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, Vec2 nw, Vec2 se) {
+    if (!tree || !crt) {
+        return NULL;
+    }
+
+    CrtList *list = crt_list_create(5);
+    EXIT_IF(list == NULL, "failed to allocate memory for CrtList");
+
+    _node_find_in_area(tree->root, crt, nw, se, list);
+    return list;
+}
+
 ////
 // debug
 ////
@@ -359,7 +446,7 @@ void _print_desc(QuadNode *node) {
 }
 
 void _print_asc(QuadNode *node) {
-  fprintf(_out, "\n");
+    fprintf(_out, "\n");
 }
 
 // --- public
@@ -369,6 +456,7 @@ void qtree_print(FILE *fp, QuadTree *tree) {
         fprintf(fp, "<NULL>");
         return;
     }
+
     _out = fp;
     qnode_walk(tree->root, _print_asc, _print_desc);
     printf("\n");
@@ -380,85 +468,14 @@ void qnode_print(FILE *fp, QuadNode *node) {
         fprintf(fp, "<NULL>");
         return;
     }
+
     fprintf(fp, "{self_nw: {%f, %f}, self_se: {%f, %f}, ", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y);
     fprintf(fp, "parent: '%c', ", (node->parent) ? 'y' : '-');
     fprintf(fp, "nw: '%c', sw: '%c', se: '%c', nw: '%c', ", (node->nw) ? 'y' : '-', (node->sw) ? 'y' : '-', (node->se) ? 'y' : '-', (node->ne) ? 'y' : '-');
+
     if (node->crt) {
         fprintf(fp, "crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
     } else {
         fprintf(fp, "crt: <NULL>}");
     }
-}
-
-
-////
-// area search
-////
-
-static int _node_within_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x >= nw.x
-        && node->self_se.x <= se.x
-        && node->self_nw.y >= nw.y
-        && node->self_se.y <= se.y;
-}
-
-static int _node_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x < se.x
-        && node->self_se.x >= nw.x
-        && node->self_nw.y < se.y
-        && node->self_se.y >= nw.y;
-}
-
-static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, CrtList *list) {
-    if (!node || !crt) {
-        return;
-    }
-
-    // this node does not interesect with the search boundary
-    // stop searching this branch
-    if (!_node_overlaps_area(node, nw, se)) {
-        return;
-    }
-    // todo if contains add all chldren withaout checking
-
-    if(qnode_isleaf(node)) {
-        // is not the home node or crt
-        if (node->crt->id == crt->id) {
-            return;
-        }
-        // If this node is within the search boundary
-        if(_node_within_area(node, nw, se)) {
-            crt_list_append(list, node->crt);
-        }
-
-        return;
-    }
-
-    if (node->nw) {
-        _node_find_in_area(node->nw, crt, nw, se, list);
-    }
-    if (node->ne) {
-        _node_find_in_area(node->ne, crt, nw, se, list);
-    }
-    if (node->se) {
-        _node_find_in_area(node->se, crt, nw, se, list);
-    }
-    if (node->sw) {
-        _node_find_in_area(node->sw, crt, nw, se, list);
-    }
-
-}
-
-CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, Vec2 nw, Vec2 se) {
-    if (!tree || !crt) {
-        return NULL;
-    }
-
-    CrtList *list = crt_list_create(5);
-    EXIT_IF(list == NULL, "failed to allocate memory for CrtList");
-
-    _node_find_in_area(tree->root, crt, nw, se, list);
-    return list;
 }
