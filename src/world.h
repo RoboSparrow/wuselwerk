@@ -6,7 +6,7 @@
 #include "app.h"
 #include "vec2.h"
 
-#define WORLD_POP_MAX 100
+#define WORLD_POP_MAX 1000
 
 // forward declarations
 
