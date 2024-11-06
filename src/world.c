@@ -11,7 +11,6 @@
 #include "ui.h"
 #include "utils.h"
 
-
 World *world_create(size_t len, Vec2 nw, Vec2 se) {
     World *world = calloc(sizeof(World), 1);
     EXIT_IF(world == NULL, "failed to allocate memory for world(1)");

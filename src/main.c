@@ -26,7 +26,6 @@
 #define FONT_PATH "font/UbuntuMono-Regular.ttf"
 #define FONT_SZ 12
 
-
 static void configure(App *app, World *world, int argc, char **argv) {
     if (!app || !world) {
         return;

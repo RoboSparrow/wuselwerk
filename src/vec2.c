@@ -5,7 +5,6 @@
 #include "vec2.h"
 #include "utils.h"
 
-
 // @see https://www.gnu.org/software/libc/manual/html_node/Mathematical-Constants.html
 #define _USE_MATH_DEFINES // math.h on older systems
 

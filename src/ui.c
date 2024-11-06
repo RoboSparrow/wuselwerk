@@ -9,7 +9,6 @@
 #include "world.h"
 #include "ui.h"
 
-
 SDL_Window *ui_init_window(App *app, World *world) {
     SDL_Window *win = NULL;
 

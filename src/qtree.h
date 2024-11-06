@@ -16,7 +16,6 @@
 #define QUAD_INSERTED 0
 #define QUAD_REPLACED 2
 
-
 ////
 //   Quadrants
 //
