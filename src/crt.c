@@ -207,8 +207,7 @@ CrtList *crt_list_append(CrtList *list, Creature *crt) {
         return NULL;
     }
 
-    size_t len = list->len + 1;
-    if (len > list->max) {
+    if (list->len >= list->max) {
         list->max += list->grow;
         list->members = realloc(list->members, list->max * sizeof(Creature*));
         if (!list->members) {
@@ -217,7 +216,7 @@ CrtList *crt_list_append(CrtList *list, Creature *crt) {
         }
     }
     list->members[list->len] = crt;
-    list->len = len;
+    list->len++;
 
     return list;
 }
@@ -238,6 +237,36 @@ void crt_list_destroy(CrtList *list) {
     }
     freez(list->members); // free list, not the nodes
     freez(list);
+}
+
+void crt_list_print(FILE *fp, CrtList *list) {
+    if(!fp) {
+        return;
+    }
+    if (!list) {
+        fprintf(fp, "<NULL>\n");
+        return;
+    }
+
+    printf(
+        "{\n"
+        "  len: %ld\n"
+        "  max: %ld\n"
+        "  grow: %ld\n"
+        "  members: [",
+        list->len,
+        list->max,
+        list->grow
+    );
+    if (list->members) {
+        for(size_t i = 0; i < list->len; i++) {
+            if (list->members[i]) {
+                printf("{id: %d, pos:{%f, %f}}", list->members[i]->id, list->members[i]->pos.x, list->members[i]->pos.y);
+            }
+            printf("%s", (i < list->len -1) ? ", " : "");
+        }
+    }
+    printf("]\n}\n");
 }
 
 ////

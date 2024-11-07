@@ -91,6 +91,7 @@ typedef struct CrtList {
 CrtList *crt_list_create(size_t max);
 CrtList *crt_list_append(CrtList *list, Creature *crt);
 void crt_list_reset(CrtList *list);
+void crt_list_print(FILE *fp, CrtList *list);
 void crt_list_destroy(CrtList *list);
 
 ////

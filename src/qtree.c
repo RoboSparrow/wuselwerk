@@ -19,12 +19,12 @@ void qnode_print(FILE *fp, QuadNode *node);
  * Checks if a pos is with an node boundary.
  */
 static int _node_contains(QuadNode *node, Vec2 pos) {
-    // printf("-- nw: {%f, %f}, se: {%f, %f}, crt: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
+    // printf(" -- nw: {%f, %f}, se: {%f, %f}, crt: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
     return node != NULL
-        && node->self_nw.x <= pos.x
-        && node->self_nw.y <= pos.y
-        && node->self_se.x >= pos.x
-        && node->self_se.y >= pos.y; // TODO quadtree.c rules are different (using bounds.nw, se as min and max)
+        && pos.x >= node->self_nw.x
+        && pos.x < node->self_se.x
+        && pos.y >= node->self_nw.y
+        && pos.y < node->self_se.y;
 }
 
 /**
@@ -230,24 +230,25 @@ static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, 
     if (!node || !crt) {
         return;
     }
+    //printf(" --- node->nw: {%f, %f}, node->se: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, nw.x, nw.y, se.x, se.y);
 
     // this node does not interesect with the search boundary
     // stop searching this branch
     if (!_node_overlaps_area(node, nw, se)) {
         return;
     }
-
+       //// if node is within the search boundary,
+       //// collect all children without further checks
+       //if(_node_within_area(node, nw, se)) {
+       //    _node_collect(node, list);
+       //    return;
+       //}
     if(qnode_isleaf(node)) {
         // is the home node of crt
         if (node->crt->id == crt->id) {
             return;
         }
-        // if node is within the search boundary,
-        // collect all children without further checks
-        if(_node_within_area(node, nw, se)) {
-            _node_collect(node, list);
-            return;
-        }
+        crt_list_append(list, node->crt);
         return;
     }
 

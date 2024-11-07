@@ -73,7 +73,7 @@ int qnode_isleaf(QuadNode *node);
 int qnode_ispointer(QuadNode *node);
 
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se);
-void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) ;
+void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node));
 
 void qtree_print(FILE *fp, QuadTree *tree);
 void qnode_print(FILE *fp, QuadNode *node);
