@@ -205,24 +205,28 @@ static int _node_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
         && node->self_se.y >= nw.y;
 }
 
-static void _node_collect(QuadNode *node, CrtList *list) {
+static void _node_collect(QuadNode *node, CrtList *list, Creature *exclude) {
     if (!node || !list) {
         return;
     }
 
-    crt_list_append(list, node->crt);
+    if (node->crt) {
+        if (!exclude || exclude->id != node->crt->id) {
+            crt_list_append(list, node->crt);
+        }
+    }
 
     if (node->nw) {
-        _node_collect(node->nw, list);
+        _node_collect(node->nw, list, exclude);
     }
     if (node->ne) {
-        _node_collect(node->nw, list);
+        _node_collect(node->nw, list, exclude);
     }
     if (node->se) {
-        _node_collect(node->nw, list);
+        _node_collect(node->nw, list, exclude);
     }
     if (node->sw) {
-        _node_collect(node->nw, list);
+        _node_collect(node->nw, list, exclude);
     }
 }
 
@@ -237,12 +241,14 @@ static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, 
     if (!_node_overlaps_area(node, nw, se)) {
         return;
     }
-       //// if node is within the search boundary,
-       //// collect all children without further checks
-       //if(_node_within_area(node, nw, se)) {
-       //    _node_collect(node, list);
-       //    return;
-       //}
+
+    // if node is within the search boundary,
+    //     collect all children without further checks, this will matter in dense clusters
+    if(_node_within_area(node, nw, se)) {
+        _node_collect(node, list, crt);
+        return;
+    }
+
     if(qnode_isleaf(node)) {
         // is the home node of crt
         if (node->crt->id == crt->id) {
