@@ -298,10 +298,10 @@ int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SD
     // 1. draw neighbour area rect
     SDL_SetRenderDrawColor(renderer, 0, 0, 125, 255);
     SDL_Rect rect = {
-        (int) (crt->pos.x - crt->perception / 2),
-        (int) (crt->pos.y - crt->perception / 2),
-        (int) crt->perception,
-        (int) crt->perception
+        (int) (crt->pos.x - crt->perception),
+        (int) (crt->pos.y - crt->perception),
+        (int) crt->perception*2,
+        (int) crt->perception*2
     };
     SDL_RenderDrawRect(renderer, &rect);
 

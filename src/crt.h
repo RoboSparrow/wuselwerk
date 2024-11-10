@@ -55,7 +55,6 @@ typedef struct Creature {
 
     Vec2 pos;
     Vec2 targ;
-
 } Creature;
 
 #define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
