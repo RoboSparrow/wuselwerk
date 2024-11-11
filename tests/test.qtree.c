@@ -12,7 +12,7 @@ static void test_tree() {
     QuadTree *tree;
     QuadNode *root;
 
-    tree = qtree_create((Vec2){0}, (Vec2) {600.f, 400.f});
+    tree = qtree_create((Vec2) {0}, (Vec2) {600.f, 400.f});
     assert(tree->length == 0);
 
     root = tree->root;
@@ -73,7 +73,7 @@ static void test_node_bounds() {
 }
 
 static void test_tree_insert() {
-    QuadTree *tree =  qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+    QuadTree *tree =  qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
     assert(tree != NULL);
     assert(tree->root->self_nw.x == 1.0);
     assert(tree->root->self_nw.y == 1.0);
@@ -128,7 +128,7 @@ static void test_tree_insert() {
 
 static void test_tree_insert_outside() {
     DESCRIBE("pos outside of tree");
-    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+    QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
     Creature *crt = crt_create(111);
     crt->pos = (Vec2) {0};
@@ -146,7 +146,7 @@ static void test_tree_insert_outside() {
 
 static void test_tree_insert_replace() {
     DESCRIBE("replace if (n2.pos == n1.pos)");
-    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+    QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
     Creature *crt1 = crt_create(111);
     Creature *crt2 = crt_create(222);
@@ -187,7 +187,7 @@ static void test_tree_insert_replace() {
 
 static void test_tree_find() {
     DESCRIBE("find");
-    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+    QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
     Creature *crt1 = crt_create(111);
     Creature *crt2 = crt_create(222);
@@ -232,7 +232,7 @@ static void test_tree_find() {
 
 static void test_node_parent() {
     DESCRIBE("parent");
-    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
+    QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
     Creature *crt1 = crt_create(111);
     Creature *crt2 = crt_create(222);

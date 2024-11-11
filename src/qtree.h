@@ -73,6 +73,9 @@ int qnode_isempty(QuadNode *node);
 int qnode_isleaf(QuadNode *node);
 int qnode_ispointer(QuadNode *node);
 
+int qnode_within_area(QuadNode *node, Vec2 nw, Vec2 se);
+int qnode_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se);
+
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se);
 void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node));
 

@@ -25,6 +25,7 @@ float vec2_mag(Vec2 v);
 float vec2_dist(Vec2 v, Vec2 d);
 
 int vec2_equals(Vec2 l, Vec2 r);
+int vec2_within(Vec2 pos, Vec2 nw, Vec2 se);
 
 // actions
 

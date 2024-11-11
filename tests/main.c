@@ -152,7 +152,7 @@ int main(int argc, char **argv) {
         if (section == TEST_QTREE_AREA || section == TEST_MAX) {
             // test.vec2.c
             SECTION(sections[TEST_QTREE_AREA]);
-            test_qtree_find_in_area(argc, argv);
+            test_qtree_area(argc, argv);
         }
 
     }

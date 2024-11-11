@@ -188,23 +188,6 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
     return NULL;
 }
 
-
-static int _node_within_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x >= nw.x
-        && node->self_se.x <= se.x
-        && node->self_nw.y >= nw.y
-        && node->self_se.y <= se.y;
-}
-
-static int _node_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x < se.x
-        && node->self_se.x >= nw.x
-        && node->self_nw.y < se.y
-        && node->self_se.y >= nw.y;
-}
-
 static void _node_collect(QuadNode *node, QuadList *list) {
     if (!node || !list) {
         return;
@@ -228,23 +211,26 @@ static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list)
     if (!node || !list) {
         return;
     }
-    //printf(" --- node->nw: {%f, %f}, node->se: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, nw.x, nw.y, se.x, se.y);
+    // printf(" --- node->nw: {%f, %f}, node->se: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, nw.x, nw.y, se.x, se.y);
 
     // this node does not interesect with the search boundary
     // stop searching this branch
-    if (!_node_overlaps_area(node, nw, se)) {
+    if (!qnode_overlaps_area(node, nw, se)) {
         return;
     }
 
     // if node is within the search boundary,
     //     collect all children without further checks, this will matter in dense clusters
-    if(_node_within_area(node, nw, se)) {
+    if(qnode_within_area(node, nw, se)) {
         _node_collect(node, list);
         return;
     }
 
+    // this is a data node (and thus without children)
     if(qnode_isleaf(node)) {
-        qlist_append(list, node);
+        if (vec2_within(node->crt->pos, nw, se)){
+            qlist_append(list, node);
+        }
         return;
     }
 
@@ -334,6 +320,28 @@ int qnode_isempty(QuadNode *node) {
       && node->sw == NULL
       && node->se == NULL
       && !qnode_isleaf(node);
+}
+
+/**
+ * checks if the area of a qnode is fully enclosed by a given area
+ */
+int qnode_within_area(QuadNode *node, Vec2 nw, Vec2 se) {
+    return node != NULL
+        && node->self_nw.x >= nw.x
+        && node->self_se.x <= se.x
+        && node->self_nw.y >= nw.y
+        && node->self_se.y <= se.y;
+}
+
+/**
+ * checks if the area of a qnode is fully overlaps a given area
+ */
+int qnode_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
+    return node != NULL
+        && node->self_nw.x < se.x
+        && node->self_se.x >= nw.x
+        && node->self_nw.y < se.y
+        && node->self_se.y >= nw.y;
 }
 
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {

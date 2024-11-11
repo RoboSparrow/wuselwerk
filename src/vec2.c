@@ -69,6 +69,14 @@ int vec2_equals(Vec2 l, Vec2 r) {
 }
 
 /**
+ * checks if a point is inside a given area
+ */
+int vec2_within(Vec2 pos, Vec2 nw, Vec2 se) {
+    return pos.x >= nw.x && pos.y >= nw.y
+        && pos.x <= se.x && pos.y <= se.y;
+}
+
+/**
  * Creates a random new vector within a radius RELATIVE from a source vector (2D!)
  * -x, y axis only (2d)
  */

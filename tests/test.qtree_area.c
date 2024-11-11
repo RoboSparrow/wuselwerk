@@ -7,7 +7,63 @@
 #include "crt.h"
 #include "qtree.h"
 
-static void test_area() {
+static void test_qnode_within_area() {
+    DESCRIBE("node covered by area");
+
+    int res;
+    QuadNode *node = qnode_create(NULL);
+    node->self_nw = (Vec2) {2.f, 2.f};
+    node->self_se = (Vec2) {5.f, 5.f};
+
+    // outside area
+    res = qnode_within_area(node, (Vec2) {0.f, 0.f}, (Vec2) {1.f, 1.f});
+    assert(res == 0);
+
+    // overlaps area
+    res = qnode_within_area(node, (Vec2) {0.f, 0.f}, (Vec2) {3.f, 3.f});
+    assert(res == 0);
+
+    // exact coverage
+    res = qnode_within_area(node, (Vec2){2.f, 2.f}, (Vec2) {5.f, 5.f});
+    assert(res == 1);
+
+    // inside area
+    res = qnode_within_area(node, (Vec2){1.f, 1.f}, (Vec2) {6.f, 6.f});
+    assert(res == 1);
+
+    qnode_destroy(node);
+    DONE();
+}
+
+static void test_qnode_overlaps_area() {
+    DESCRIBE("node overlaps area");
+
+    int res;
+    QuadNode *node = qnode_create(NULL);
+    node->self_nw = (Vec2) {2.f, 2.f};
+    node->self_se = (Vec2) {5.f, 5.f};
+
+    // outside area
+    res = qnode_overlaps_area(node, (Vec2) {0.f, 0.f}, (Vec2) {1.f, 1.f});
+    assert(res == 0);
+
+    // overlaps area
+    res = qnode_overlaps_area(node, (Vec2) {0.f, 0.f}, (Vec2) {3.f, 3.f});
+    assert(res == 1);
+
+    // exact coverage
+    res = qnode_overlaps_area(node, (Vec2){2.f, 2.f}, (Vec2) {5.f, 5.f});
+    assert(res == 1);
+
+    // inside area
+    res = qnode_overlaps_area(node, (Vec2){1.f, 1.f}, (Vec2) {6.f, 6.f});
+    assert(res == 1);
+
+    qnode_destroy(node);
+    DONE();
+}
+
+static void test_find_in_area() {
     DESCRIBE("area");
     QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {11.f, 11.f});
 
@@ -53,8 +109,8 @@ static void test_area() {
         // insert nodes
         for (i = 0; i < 3; i++) {
             res = qtree_insert(tree, inside[i]);
-            assert(res == QUAD_INSERTED);
             // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", inside[i]->id, inside[i]->pos.x, inside[i]->pos.y, nw.x, nw.y, se.x, se.y);
+            assert(res == QUAD_INSERTED);
         }
         for (i = 0; i < 3; i++) {
             res = qtree_insert(tree, outside[i]);
@@ -74,7 +130,9 @@ static void test_area() {
     DONE();
 }
 
+void test_qtree_area(int argc, char **argv) {
+    test_qnode_within_area();
+    test_qnode_overlaps_area();
 
-void test_qtree_find_in_area(int argc, char **argv) {
-    test_area();
+    test_find_in_area();
 }
