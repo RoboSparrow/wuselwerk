@@ -99,6 +99,6 @@ void qlist_reset(QuadList *list);
 void qlist_print(FILE *fp, QuadList *list);
 void qlist_destroy(QuadList *list);
 
-QuadList *qtree_find_in_area(QuadTree *tree, QuadList *list, Vec2 nw, Vec2 se); // TODO
+QuadList *qtree_find_in_area(QuadTree *tree, Vec2 pos, float radius, QuadList *list); // TODO
 
 #endif

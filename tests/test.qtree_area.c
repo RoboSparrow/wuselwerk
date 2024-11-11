@@ -7,6 +7,19 @@
 #include "crt.h"
 #include "qtree.h"
 
+
+static int _in_list(int id, QuadList *list) {
+    for (size_t i = 0; i < list->len; i++) {
+        if (list->nodes[i] && list->nodes[i]->crt) {
+            if (list->nodes[i]->crt->id == id) {
+                return 1;
+            }
+        }
+    }
+    return 0;
+}
+
+
 static void test_qnode_within_area() {
     DESCRIBE("node covered by area");
 
@@ -65,36 +78,37 @@ static void test_qnode_overlaps_area() {
 
 static void test_find_in_area() {
     DESCRIBE("area");
-    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {11.f, 11.f});
+    QuadTree *tree = qtree_create((Vec2){1.f, 1.f}, (Vec2) {10.f, 10.f});
 
-    float rad = 2.f;
+    float radius = 2.f;
+    Vec2 pos = (Vec2) {4.f, 4.f};
 
     Creature *ref = crt_create(0);
-    ref->pos = (Vec2) {8.f, 4.f};
+    ref->pos = pos;
 
-    Vec2 nw = {ref->pos.x - rad, ref->pos.y - rad};
-    Vec2 se = {ref->pos.x + rad, ref->pos.y + rad};
+    Vec2 nw = {ref->pos.x - radius, ref->pos.y - radius};
+    Vec2 se = {ref->pos.x + radius, ref->pos.y + radius};
     // printf("ref: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", ref->pos.x, ref->pos.y, nw.x, nw.y, se.x, se.y);
 
     // inside
     Creature *crt1 = crt_create(1);
-    crt1->pos = (Vec2) {8.f, 3.f};
+    crt1->pos = (Vec2) {pos.x + (radius / 2.f), pos.y + (radius / 2.f)};
 
     Creature *crt2 = crt_create(2);
-    crt2->pos = (Vec2) {nw.x, nw.y};
+    crt2->pos = (Vec2) {pos.x + radius, pos.y + radius};
 
     Creature *crt3 = crt_create(3);
-    crt3->pos = (Vec2) {se.x, se.y};
+    crt3->pos = (Vec2) {pos.x - radius, pos.y - radius};
 
     // outside
     Creature *crt4 = crt_create(4);
     crt4->pos = (Vec2) {1.f, 1.f};
 
     Creature *crt5 = crt_create(5);
-    crt5->pos = (Vec2) {ref->pos.x, nw.y - 0.1};
+    crt5->pos = (Vec2) {pos.x, pos.y + radius + 0.1};
 
     Creature *crt6 = crt_create(6);
-    crt6->pos = (Vec2) {nw.x - 0.1, ref->pos.y};
+    crt6->pos = (Vec2) {pos.x - radius - 0.1, pos.y};
 
     Creature *inside[3] = {crt1, crt2, crt3};
     Creature *outside[3] = {crt4, crt5, crt6};
@@ -102,28 +116,32 @@ static void test_find_in_area() {
     QuadList *list = qlist_create(1);
     int res, i;
 
-    {
-        res = qtree_insert(tree, ref);
-        assert(res == QUAD_INSERTED);
+    res = qtree_insert(tree, ref);
+    assert(res == QUAD_INSERTED);
 
-        // insert nodes
-        for (i = 0; i < 3; i++) {
-            res = qtree_insert(tree, inside[i]);
-            // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", inside[i]->id, inside[i]->pos.x, inside[i]->pos.y, nw.x, nw.y, se.x, se.y);
-            assert(res == QUAD_INSERTED);
-        }
-        for (i = 0; i < 3; i++) {
-            res = qtree_insert(tree, outside[i]);
-            // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", outside[i]->id, outside[i]->pos.x, outside[i]->pos.y, nw.x, nw.y, se.x, se.y);
-            assert(res == QUAD_INSERTED);
-        }
-        assert(tree->length == 7); // 2 * 3 + 1
-    } {
-        qtree_find_in_area(tree, list, nw, se);
-        assert(list != NULL);
-        // qlist_print(stderr, list);
-        assert(list->len == 3);
+    // insert nodes
+    for (i = 0; i < 3; i++) {
+        res = qtree_insert(tree, inside[i]);
+        // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", inside[i]->id, inside[i]->pos.x, inside[i]->pos.y, nw.x, nw.y, se.x, se.y);
+        assert(res == QUAD_INSERTED);
     }
+    for (i = 0; i < 3; i++) {
+        res = qtree_insert(tree, outside[i]);
+        // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", outside[i]->id, outside[i]->pos.x, outside[i]->pos.y, nw.x, nw.y, se.x, se.y);
+        assert(res == QUAD_INSERTED);
+    }
+    assert(tree->length == 7); // 2 * 3 + 1
+
+    // qtree_print(stdout, tree); exit(0);
+    qtree_find_in_area(tree, pos, radius, list);
+
+    assert(list != NULL);
+    assert(list->len == 4);
+
+    assert(_in_list(0, list));
+    assert(_in_list(1, list));
+    assert(_in_list(2, list));
+    assert(_in_list(3, list));
 
     qlist_destroy(list);
     qtree_destroy(tree);

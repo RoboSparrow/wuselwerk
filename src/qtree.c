@@ -219,13 +219,6 @@ static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list)
         return;
     }
 
-    // if node is within the search boundary,
-    //     collect all children without further checks, this will matter in dense clusters
-    if(qnode_within_area(node, nw, se)) {
-        _node_collect(node, list);
-        return;
-    }
-
     // this is a data node (and thus without children)
     if(qnode_isleaf(node)) {
         if (vec2_within(node->crt->pos, nw, se)){
@@ -432,12 +425,15 @@ QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
     return _node_find(tree, tree->root, pos);
 }
 
-QuadList *qtree_find_in_area(QuadTree *tree, QuadList *list, Vec2 nw, Vec2 se) {
+QuadList *qtree_find_in_area(QuadTree *tree, Vec2 pos, float radius, QuadList *list) {
     if (!tree || !list) {
         return NULL;
     }
 
+    Vec2 nw = { pos.x - radius, pos.y - radius };
+    Vec2 se = { pos.x + radius, pos.y + radius };
     _node_find_in_area(tree->root, nw, se, list);
+
     return list;
 }
 
@@ -447,13 +443,12 @@ QuadList *qtree_find_in_area(QuadTree *tree, QuadList *list, Vec2 nw, Vec2 se) {
 
 FILE *_out = NULL;
 
-void _print_desc(QuadNode *node) {
+static void _print_desc(QuadNode *node) {
     qnode_print(_out, node);
-}
-
-void _print_asc(QuadNode *node) {
     fprintf(_out, "\n");
 }
+
+static void _print_asc(QuadNode *node) {}
 
 // --- public
 
@@ -465,7 +460,6 @@ void qtree_print(FILE *fp, QuadTree *tree) {
 
     _out = fp;
     qnode_walk(tree->root, _print_asc, _print_desc);
-    printf("\n");
     _out = NULL;
 }
 
@@ -482,7 +476,7 @@ void qnode_print(FILE *fp, QuadNode *node) {
     if (node->crt) {
         fprintf(fp, "crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
     } else {
-        fprintf(fp, "crt: <NULL>}");
+        fprintf(fp, "crt: '-'}");
     }
 }
 

@@ -196,9 +196,7 @@ QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *l
         qlist_reset(list);
     }
 
-    Vec2 nw = { crt->pos.x - crt->perception, crt->pos.y - crt->perception };
-    Vec2 se = { crt->pos.x + crt->perception, crt->pos.y + crt->perception };
-    return qtree_find_in_area(world->qtree, list, nw, se);
+    return qtree_find_in_area(world->qtree, crt->pos, crt->perception, list);
 }
 
 int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){
