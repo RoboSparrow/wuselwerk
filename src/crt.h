@@ -6,6 +6,7 @@
 
 #include "app.h"
 #include "world.h"
+#include "qtree.h"
 #include "vec2.h"
 
 #define CRT_MIN_W 10.f
@@ -17,6 +18,8 @@
 #define CRT_POS_NONE -1000.f
 
 #define CRT_NAME_LEN 16
+
+typedef struct QuadList QuadList; // forward decl, TODO remove, after circlular includes is resolved
 
 ////
 // Crt
@@ -77,27 +80,10 @@ int crt_update(Creature *crt, App *app, World *world);
 int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
 
 ////
-// CrtList
-////
-
-typedef struct CrtList {
-  size_t len;
-  size_t grow;
-  size_t max;
-  Creature **members;
-} CrtList;
-
-CrtList *crt_list_create(size_t max);
-CrtList *crt_list_append(CrtList *list, Creature *crt);
-void crt_list_reset(CrtList *list);
-void crt_list_print(FILE *fp, CrtList *list);
-void crt_list_destroy(CrtList *list);
-
-////
 // Relationships
 ////
 
-CrtList *crt_find_neighbours(Creature *crt, App *app, World *world, CrtList *list);
-int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list) ;
+int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
 
 #endif

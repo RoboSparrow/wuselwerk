@@ -17,5 +17,9 @@ void test_vec2(int argc, char **argv);
 void test_crt(int argc, char **argv);
 // test.qtree.c
 void test_qtree(int argc, char **argv);
+// test.qnode_list.c
+void test_qnode_list(int argc, char **argv);
+// test.qtree_find_in_area.c
+void test_qtree_find_in_area(int argc, char **argv);
 
 #endif

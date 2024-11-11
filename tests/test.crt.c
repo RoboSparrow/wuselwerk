@@ -70,6 +70,4 @@ void test_crt(int argc, char **argv) {
 
         DONE();
     }
-
-    return;
 }

@@ -141,8 +141,8 @@ int main (int argc, char **argv) {
     // render changes
     SDL_RenderPresent(renderer);
 
-    CrtList *neighbours = crt_list_create(5);
-    EXIT_IF(neighbours == NULL, "failed to allocate memory for CrtList");
+    QuadList *neighbours = qlist_create(5);
+    EXIT_IF(neighbours == NULL, "failed to allocate memory for QuadList");
 
     while (app.running) {
         while (SDL_PollEvent(&ev) != 0)  {
@@ -194,7 +194,7 @@ int main (int argc, char **argv) {
 
     } // while
 
-    crt_list_destroy(neighbours);
+    qlist_destroy(neighbours);
     world_destroy(world);
     ui_exit(&app, window, renderer, font);
     app_destroy(&app);

@@ -136,8 +136,8 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
     // └────────────┴────────────x
     //                     se(x,y)
 
-    float hw = node->self_width / 2;
-    float hh = node->self_height / 2;
+    float hw = node->width / 2;
+    float hh = node->height / 2;
 
     float minx = node->self_nw.x;
     float miny = node->self_nw.y;
@@ -205,33 +205,27 @@ static int _node_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
         && node->self_se.y >= nw.y;
 }
 
-static void _node_collect(QuadNode *node, CrtList *list, Creature *exclude) {
+static void _node_collect(QuadNode *node, QuadList *list) {
     if (!node || !list) {
         return;
     }
 
-    if (node->crt) {
-        if (!exclude || exclude->id != node->crt->id) {
-            crt_list_append(list, node->crt);
-        }
-    }
-
     if (node->nw) {
-        _node_collect(node->nw, list, exclude);
+        _node_collect(node->nw, list);
     }
     if (node->ne) {
-        _node_collect(node->nw, list, exclude);
+        _node_collect(node->nw, list);
     }
     if (node->se) {
-        _node_collect(node->nw, list, exclude);
+        _node_collect(node->nw, list);
     }
     if (node->sw) {
-        _node_collect(node->nw, list, exclude);
+        _node_collect(node->nw, list);
     }
 }
 
-static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, CrtList *list) {
-    if (!node || !crt) {
+static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list) {
+    if (!node || !list) {
         return;
     }
     //printf(" --- node->nw: {%f, %f}, node->se: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, nw.x, nw.y, se.x, se.y);
@@ -245,30 +239,26 @@ static void _node_find_in_area(QuadNode *node, Creature *crt, Vec2 nw, Vec2 se, 
     // if node is within the search boundary,
     //     collect all children without further checks, this will matter in dense clusters
     if(_node_within_area(node, nw, se)) {
-        _node_collect(node, list, crt);
+        _node_collect(node, list);
         return;
     }
 
     if(qnode_isleaf(node)) {
-        // is the home node of crt
-        if (node->crt->id == crt->id) {
-            return;
-        }
-        crt_list_append(list, node->crt);
+        qlist_append(list, node);
         return;
     }
 
     if (node->nw) {
-        _node_find_in_area(node->nw, crt, nw, se, list);
+        _node_find_in_area(node->nw, nw, se, list);
     }
     if (node->ne) {
-        _node_find_in_area(node->ne, crt, nw, se, list);
+        _node_find_in_area(node->ne, nw, se, list);
     }
     if (node->se) {
-        _node_find_in_area(node->se, crt, nw, se, list);
+        _node_find_in_area(node->se, nw, se, list);
     }
     if (node->sw) {
-        _node_find_in_area(node->sw, crt, nw, se, list);
+        _node_find_in_area(node->sw, nw, se, list);
     }
 }
 
@@ -291,8 +281,10 @@ QuadNode *qnode_create(QuadNode *parent) {
     node->self_nw  = (Vec2){0};
     node->self_se  = (Vec2){0};
 
-    node->self_width  = 0;
-    node->self_height  = 0;
+    node->center  = (Vec2){0};
+
+    node->width  = 0;
+    node->height  = 0;
 
     node->crt = NULL;
 
@@ -345,10 +337,12 @@ int qnode_isempty(QuadNode *node) {
 }
 
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
-    node->self_nw =  nw;
-    node->self_se =  se;
-    node->self_width  = fabs(nw.x - se.x);
-    node->self_height = fabs(nw.y - se.y);
+    node->self_nw = nw;
+    node->self_se = se;
+    node->center.x = nw.x + ((se.x - nw.x) / 2);
+    node->center.y = nw.y + ((se.y - nw.y) / 2);
+    node->width  = fabs(nw.x - se.x);
+    node->height = fabs(nw.y - se.y);
 }
 
 /**
@@ -430,12 +424,12 @@ QuadNode *qtree_find(QuadTree *tree, Vec2 pos) {
     return _node_find(tree, tree->root, pos);
 }
 
-CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, CrtList *list, Vec2 nw, Vec2 se) {
-    if (!tree || !crt || !list) {
+QuadList *qtree_find_in_area(QuadTree *tree, QuadList *list, Vec2 nw, Vec2 se) {
+    if (!tree || !list) {
         return NULL;
     }
 
-    _node_find_in_area(tree->root, crt, nw, se, list);
+    _node_find_in_area(tree->root, nw, se, list);
     return list;
 }
 
@@ -482,4 +476,94 @@ void qnode_print(FILE *fp, QuadNode *node) {
     } else {
         fprintf(fp, "crt: <NULL>}");
     }
+}
+
+
+////
+// QuadList
+////
+
+QuadList *qlist_create(size_t max) {
+    QuadList *list = malloc(sizeof(QuadList));
+    if (!list) {
+        return NULL;
+    }
+
+    list->len = 0;
+    list->grow = max;
+    list->max = max;
+
+    list->nodes = calloc(sizeof(QuadNode*), max);
+    if (!list->nodes) {
+        freez(list);
+        return NULL;
+    }
+    return list;
+}
+
+QuadList *qlist_append(QuadList *list, QuadNode *node) {
+    if (!list || !node) {
+        return NULL;
+    }
+
+    if (list->len >= list->max) {
+        list->max += list->grow;
+        list->nodes = realloc(list->nodes, list->max * sizeof(QuadNode*));
+        if (!list->nodes) {
+            freez(list);
+            return NULL;
+        }
+    }
+    list->nodes[list->len] = node;
+    list->len++;
+
+    return list;
+}
+
+void qlist_reset(QuadList *list) {
+    if (!list) {
+        return;
+    }
+    for (size_t i = 0; i < list->len; i++) {
+        list->nodes[i] = NULL; // leave allocated mem
+    }
+    list->len = 0;
+}
+
+void qlist_destroy(QuadList *list) {
+    if (!list) {
+        return;
+    }
+    freez(list->nodes); // free the list, not the nodes!
+    freez(list);
+}
+
+void qlist_print(FILE *fp, QuadList *list) {
+    if(!fp) {
+        return;
+    }
+    if (!list) {
+        fprintf(fp, "<NULL>\n");
+        return;
+    }
+
+    printf(
+        "{\n"
+        "  len: %ld\n"
+        "  max: %ld\n"
+        "  grow: %ld\n"
+        "  nodes: [",
+        list->len,
+        list->max,
+        list->grow
+    );
+    if (list->nodes) {
+        for(size_t i = 0; i < list->len; i++) {
+            if (list->nodes[i]) {
+                printf("{center:{%f, %f}}", list->nodes[i]->center.x, list->nodes[i]->center.y);
+            }
+            printf("%s", (i < list->len -1) ? ", " : "");
+        }
+    }
+    printf("]\n}\n");
 }

@@ -181,116 +181,27 @@ int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_
 }
 
 ////
-// CrtList
-////
-
-CrtList *crt_list_create(size_t max) {
-    CrtList *list = malloc(sizeof(CrtList));
-    if (!list) {
-        return NULL;
-    }
-
-    list->len = 0;
-    list->grow = max;
-    list->max = max;
-
-    list->members = calloc(sizeof(Creature*), max);
-    if (!list->members) {
-        freez(list);
-        return NULL;
-    }
-    return list;
-}
-
-CrtList *crt_list_append(CrtList *list, Creature *crt) {
-    if (!list) {
-        return NULL;
-    }
-
-    if (list->len >= list->max) {
-        list->max += list->grow;
-        list->members = realloc(list->members, list->max * sizeof(Creature*));
-        if (!list->members) {
-            freez(list);
-            return NULL;
-        }
-    }
-    list->members[list->len] = crt;
-    list->len++;
-
-    return list;
-}
-
-void crt_list_reset(CrtList *list) {
-    if (!list) {
-        return;
-    }
-    for (size_t i = 0; i < list->len; i++) {
-        list->members[i] = NULL;
-    }
-    list->len = 0;
-}
-
-void crt_list_destroy(CrtList *list) {
-    if (!list) {
-        return;
-    }
-    freez(list->members); // free list, not the nodes
-    freez(list);
-}
-
-void crt_list_print(FILE *fp, CrtList *list) {
-    if(!fp) {
-        return;
-    }
-    if (!list) {
-        fprintf(fp, "<NULL>\n");
-        return;
-    }
-
-    printf(
-        "{\n"
-        "  len: %ld\n"
-        "  max: %ld\n"
-        "  grow: %ld\n"
-        "  members: [",
-        list->len,
-        list->max,
-        list->grow
-    );
-    if (list->members) {
-        for(size_t i = 0; i < list->len; i++) {
-            if (list->members[i]) {
-                printf("{id: %d, pos:{%f, %f}}", list->members[i]->id, list->members[i]->pos.x, list->members[i]->pos.y);
-            }
-            printf("%s", (i < list->len -1) ? ", " : "");
-        }
-    }
-    printf("]\n}\n");
-}
-
-////
 // Relationships
 ////
 
-CrtList *crt_find_neighbours(Creature *crt, App *app, World *world, CrtList *list) {
+QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list) {
     if (!crt || !app || !world) {
         return NULL;
     }
 
     if (!list) {
-        list = crt_list_create(5);
-        EXIT_IF(list == NULL, "failed to allocate memory for CrtList");
+        list = qlist_create(5);
+        EXIT_IF(list == NULL, "failed to allocate memory for QuadList");
     } else {
-        crt_list_reset(list);
+        qlist_reset(list);
     }
 
     Vec2 nw = { crt->pos.x - crt->perception, crt->pos.y - crt->perception };
     Vec2 se = { crt->pos.x + crt->perception, crt->pos.y + crt->perception };
-    return qtree_find_in_area(world->qtree, crt, list, nw, se);
+    return qtree_find_in_area(world->qtree, list, nw, se);
 }
 
-int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){
+int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){
     if (!crt || !list || !app || !world || !renderer || !font) {
         return -1;
     }
@@ -300,15 +211,19 @@ int crt_draw_neighbours(Creature *crt, CrtList *list, App *app, World *world, SD
     SDL_Rect rect = {
         (int) (crt->pos.x - crt->perception),
         (int) (crt->pos.y - crt->perception),
-        (int) crt->perception*2,
-        (int) crt->perception*2
+        (int) crt->perception * 2,
+        (int) crt->perception * 2
     };
     SDL_RenderDrawRect(renderer, &rect);
 
     // 4. draw neighbour relationships
     SDL_SetRenderDrawColor(renderer, 125, 0, 0, 255);
     for (size_t i = 0; i < list->len; i++) {
-        SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) list->members[i]->pos.x, (int) list->members[i]->pos.y);
+        if (list->nodes[i] && list->nodes[i]->crt) {
+            if(list->nodes[i]->crt->id != crt->id) {
+                SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) list->nodes[i]->crt->pos.x, (int) list->nodes[i]->crt->pos.y);
+            }
+        }
     }
 
     return 0;

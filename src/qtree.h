@@ -47,8 +47,9 @@ typedef struct QuadNode {
     Vec2 self_nw;
     Vec2 self_se;
 
-    float self_width;
-    float self_height;
+    Vec2 center;
+    float width;
+    float height;
 
     Creature *crt;
 } QuadNode;
@@ -78,6 +79,23 @@ void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(
 void qtree_print(FILE *fp, QuadTree *tree);
 void qnode_print(FILE *fp, QuadNode *node);
 
-CrtList *qtree_find_in_area(QuadTree *tree, Creature *crt, CrtList *list, Vec2 nw, Vec2 se) ;
+////
+// QuadList
+////
+
+typedef struct QuadList {
+  size_t len;
+  size_t grow;
+  size_t max;
+  QuadNode **nodes;
+} QuadList;
+
+QuadList *qlist_create(size_t max);
+QuadList *qlist_append(QuadList *list, QuadNode *node);
+void qlist_reset(QuadList *list);
+void qlist_print(FILE *fp, QuadList *list);
+void qlist_destroy(QuadList *list);
+
+QuadList *qtree_find_in_area(QuadTree *tree, QuadList *list, Vec2 nw, Vec2 se); // TODO
 
 #endif

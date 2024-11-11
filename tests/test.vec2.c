@@ -113,5 +113,4 @@ void test_vec2(int argc, char **argv) {
         DONE();
     }
 
-    return;
 }
