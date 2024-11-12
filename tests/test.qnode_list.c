@@ -25,10 +25,10 @@ void test_qnode_list(int argc, char **argv) {
         DESCRIBE("qlist_append()");
 
         QuadNode q1 = {
-            .center={1.f, 1.f}
+            .pos={1.f, 1.f}
         };
         QuadNode q2 = {
-            .center={2.f, 2.f}
+            .pos={2.f, 2.f}
         };
 
         QuadList *list = qlist_create(1);
@@ -52,10 +52,10 @@ void test_qnode_list(int argc, char **argv) {
         DESCRIBE("qlist_reset()");
 
         QuadNode q1 = {
-            .center={1.f, 1.f}
+            .pos={1.f, 1.f}
         };
         QuadNode q2 = {
-            .center={2.f, 2.f}
+            .pos={2.f, 2.f}
         };
 
         QuadList *list = qlist_create(1);

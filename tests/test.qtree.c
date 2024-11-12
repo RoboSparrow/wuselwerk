@@ -4,8 +4,12 @@
 #include <assert.h>
 
 #include "test.h"
-#include "crt.h"
 #include "qtree.h"
+
+typedef struct TestItem {
+    int id;
+    Vec2 pos; // control data, will not be queried within qtree.h
+} TestItem;
 
 static void test_tree() {
     DESCRIBE("tree");
@@ -24,9 +28,6 @@ static void test_tree() {
     assert(root->self_nw.y == 0);
     assert(root->self_se.x == 600.0);
     assert(root->self_se.y == 400.0);
-
-    assert(root->center.x == 300.0);
-    assert(root->center.y == 200.0);
 
     assert(root->width == 600.0);
     assert(root->height == 400.0);
@@ -62,9 +63,6 @@ static void test_node_bounds() {
     assert(node->self_se.x == 2.0);
     assert(node->self_se.y == 4.0);
 
-    assert(node->center.x == 1.5);
-    assert(node->center.y == 3.0);
-
     assert(node->width == 1.0);
     assert(node->height == 2.0);
 
@@ -80,18 +78,15 @@ static void test_tree_insert() {
     assert(tree->root->self_se.x == 10.0);
     assert(tree->root->self_se.y == 10.0);
 
-    Creature *crt1 = crt_create(111);
-    Creature *crt2 = crt_create(222);
-
-    crt1->pos = (Vec2) {8.f, 2.f};
-    crt2->pos = (Vec2) {1.f, 1.f};
+    TestItem itm1 = {111, {8.f, 2.f}};
+    TestItem itm2 = {222, {1.f, 1.f}};
 
     {
         DESCRIBE("test_qtree_insert(first node)");
-        int res = qtree_insert(tree, crt1);
+        int res = qtree_insert(tree, &itm1, itm1.pos);
         // qnode_print(tree->root);
 
-        assert(tree->root->crt != NULL);
+        assert(tree->root->data != NULL);
         assert(res == QUAD_INSERTED);
         assert(tree->length == 1);
 
@@ -101,14 +96,17 @@ static void test_tree_insert() {
         assert(tree->root->sw == NULL);
 
         // verify node idendity
-        assert(tree->root->crt->id == crt1->id);
+        assert(tree->root->data != NULL);
+
+        TestItem *item = (TestItem*) tree->root->data;
+        assert(item->id == itm1.id);
         DONE();
     } {
         DESCRIBE("test_qtree_insert(second node)");
-        int res = qtree_insert(tree, crt2);
+        int res = qtree_insert(tree, &itm2, itm2.pos);
         // qnode_print(tree->root);
 
-        assert(tree->root->crt == NULL); // 111 has been moved
+        assert(tree->root->data == NULL); // 111 has been moved
         assert(res == QUAD_INSERTED);
         assert(tree->length == 2);
 
@@ -119,7 +117,9 @@ static void test_tree_insert() {
         assert(tree->root->sw != NULL);
 
         // verify node idendity
-        assert(tree->root->ne->crt->id == crt1->id);
+        assert(tree->root->ne->data != NULL);
+        TestItem *item = (TestItem*) tree->root->ne->data;
+        assert(item->id == itm1.id);
         DONE();
     }
 
@@ -130,13 +130,12 @@ static void test_tree_insert_outside() {
     DESCRIBE("pos outside of tree");
     QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
-    Creature *crt = crt_create(111);
-    crt->pos = (Vec2) {0};
+    TestItem itm = {111, {0.f, 0.f}};
 
     int res;
-    res = qtree_insert(tree, crt);
+    res = qtree_insert(tree, &itm, itm.pos);
 
-    assert(tree->root->crt == NULL);
+    assert(tree->root->data == NULL);
     assert(res == QUAD_FAILED);
 
     qtree_destroy(tree);
@@ -148,29 +147,32 @@ static void test_tree_insert_replace() {
     DESCRIBE("replace if (n2.pos == n1.pos)");
     QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
-    Creature *crt1 = crt_create(111);
-    Creature *crt2 = crt_create(222);
-    crt1->pos = (Vec2) {8.f, 2.f};
-    crt2->pos = (Vec2) {8.f, 2.f};
+    TestItem itm1 = {111, {8.f, 2.f}};
+    TestItem itm2 = {222, {8.f, 2.f}};
 
     int res;
+    TestItem *item;
 
     {
         // first node
-        res = qtree_insert(tree, crt1);
+        res = qtree_insert(tree, &itm1, itm1.pos);
 
         assert(res == QUAD_INSERTED);
         assert(tree->length == 1);
-        assert(tree->root->crt != NULL);
-        assert(tree->root->crt->id == crt1->id);
+        assert(tree->root->data != NULL);
+
+        item = (TestItem*) tree->root->data;
+        assert(item->id == itm1.id);
     } {
         // second node replaces first
-        res = qtree_insert(tree, crt2);
+        res = qtree_insert(tree, &itm2, itm2.pos);
 
         assert(res == QUAD_REPLACED);
         assert(tree->length == 1);
-        assert(tree->root->crt != NULL);
-        assert(tree->root->crt->id == crt2->id);
+        assert(tree->root->data != NULL);
+
+        item = (TestItem*) tree->root->data;
+        assert(item->id == itm2.id);
 
         // splitting
         {
@@ -189,21 +191,20 @@ static void test_tree_find() {
     DESCRIBE("find");
     QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
-    Creature *crt1 = crt_create(111);
-    Creature *crt2 = crt_create(222);
-    crt1->pos = (Vec2) {8.f, 2.f};
-    crt2->pos = (Vec2) {1.f, 1.f};
+    TestItem itm1 = {111, {8.f, 2.f}};
+    TestItem itm2 = {222, {1.f, 1.f}};
 
     QuadNode *node;
+    TestItem *item;
     int res;
     Vec2 search;
 
     {
         // insert nodes
-        res = qtree_insert(tree, crt1);
+        res = qtree_insert(tree, &itm1, itm1.pos);
         assert(res == QUAD_INSERTED);
 
-        res = qtree_insert(tree, crt2);
+        res = qtree_insert(tree, &itm2, itm2.pos);
         assert(res == QUAD_INSERTED);
 
         assert(tree->length == 2);
@@ -214,16 +215,19 @@ static void test_tree_find() {
         assert(node == NULL);
     } {
         // find second item;
-        search = crt2->pos;
+        search = itm2.pos;
         node = qtree_find(tree, search);
         assert(node != NULL);
-        assert(node->crt->id == crt2->id);
+
+        item = (TestItem*) node->data;
+        assert(item->id == itm2.id);
     } {
        //find first item
-        search = crt1->pos;
+        search = itm1.pos;
         node = qtree_find(tree, search);
-        assert(node != NULL);
-        assert(node->crt->id == crt1->id);
+
+        item = (TestItem*) node->data;
+        assert(item->id == itm1.id);
     }
 
     qtree_destroy(tree);
@@ -234,23 +238,21 @@ static void test_node_parent() {
     DESCRIBE("parent");
     QuadTree *tree = qtree_create((Vec2) {1.f, 1.f}, (Vec2) {10.f, 10.f});
 
-    Creature *crt1 = crt_create(111);
-    Creature *crt2 = crt_create(222);
-
     // a nested tree with three levels
-    crt1->pos = (Vec2) {8.f, 2.f};
-    crt2->pos = (Vec2) {9.f, 1.f};
+    TestItem itm1 = {111, {8.f, 2.f}};
+    TestItem itm2 = {222, {9.f, 1.f}};
 
     QuadNode *node, *parent;
+    TestItem *item;
     int res;
     Vec2 search;
 
     {
         // insert nodes
-        res = qtree_insert(tree, crt1);
+        res = qtree_insert(tree, &itm1, itm1.pos);
         assert(res == QUAD_INSERTED);
 
-        res = qtree_insert(tree, crt2);
+        res = qtree_insert(tree, &itm2, itm2.pos);
         assert(res == QUAD_INSERTED);
 
         assert(tree->length == 2);
@@ -275,7 +277,7 @@ static void test_node_parent() {
         assert(node->parent->self_nw.x == parent->self_nw.x);
         assert(node->parent->self_se.y == parent->self_se.y);
 
-        //qnode_print(stderr, node);
+        // qnode_print(stderr, node);
     } {
         // find first leaf
         parent = tree->root->ne->ne;
@@ -287,11 +289,13 @@ static void test_node_parent() {
         assert(node->parent->self_nw.x == parent->self_nw.x);
         assert(node->parent->self_se.y == parent->self_se.y);
 
-        // crt
-        assert(node->crt != NULL);
-        assert(node->crt->id == crt1->id);
+        // data
+        assert(node->data != NULL);
 
-        //qnode_print(stderr, node);
+        item = (TestItem*) node->data;
+        assert(item->id == itm1.id);
+
+        // qnode_print(stderr, node);
     } {
         // find second leaf
         parent = tree->root->ne->ne;
@@ -303,11 +307,13 @@ static void test_node_parent() {
         assert(node->parent->self_nw.x == parent->self_nw.x);
         assert(node->parent->self_se.y == parent->self_se.y);
 
-        // crt
-        assert(node->crt != NULL);
-        assert(node->crt->id == crt2->id);
+        // data
+        assert(node->data != NULL);
 
-        //qnode_print(stderr, node);
+        item = (TestItem*) node->data;
+        assert(item->id == itm2.id);
+
+        // qnode_print(stderr, node);
     }
 
     qtree_destroy(tree);

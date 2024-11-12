@@ -215,11 +215,13 @@ int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, S
     SDL_RenderDrawRect(renderer, &rect);
 
     // 4. draw neighbour relationships
+    Creature *other;
     SDL_SetRenderDrawColor(renderer, 125, 0, 0, 255);
     for (size_t i = 0; i < list->len; i++) {
-        if (list->nodes[i] && list->nodes[i]->crt) {
-            if(list->nodes[i]->crt->id != crt->id) {
-                SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) list->nodes[i]->crt->pos.x, (int) list->nodes[i]->crt->pos.y);
+        if (list->nodes[i] && list->nodes[i]->data) {
+            other = (Creature*) list->nodes[i]->data;
+            if(other->id != crt->id) {
+                SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) other->pos.x, (int) other->pos.y);
             }
         }
     }

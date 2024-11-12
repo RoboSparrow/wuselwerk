@@ -9,7 +9,6 @@
 #ifndef __QTREE_H__
 #define __QTREE_H__
 
-#include "crt.h"
 #include "vec2.h"
 
 #define QUAD_FAILED -1
@@ -47,11 +46,11 @@ typedef struct QuadNode {
     Vec2 self_nw;
     Vec2 self_se;
 
-    Vec2 center;
     float width;
     float height;
 
-    Creature *crt;
+    Vec2 pos;
+    void *data;
 } QuadNode;
 
 typedef struct QuadTree {
@@ -63,7 +62,7 @@ typedef struct QuadTree {
 QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se);
 void qtree_destroy(QuadTree *tree);
 
-int qtree_insert(QuadTree *tree, Creature *crt);
+int qtree_insert(QuadTree *tree, void *data, Vec2 pos);
 QuadNode *qtree_find(QuadTree *tree, Vec2 pos);
 
 QuadNode *qnode_create(QuadNode *parent);

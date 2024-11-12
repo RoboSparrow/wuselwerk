@@ -4,14 +4,19 @@
 #include <assert.h>
 
 #include "test.h"
-#include "crt.h"
 #include "qtree.h"
+
+typedef struct TestItem {
+    int id;
+    Vec2 pos; // control data, will not be queried within qtree.h
+} TestItem;
 
 
 static int _in_list(int id, QuadList *list) {
     for (size_t i = 0; i < list->len; i++) {
-        if (list->nodes[i] && list->nodes[i]->crt) {
-            if (list->nodes[i]->crt->id == id) {
+        if (list->nodes[i] && list->nodes[i]->data) {
+            TestItem *item = (TestItem*) list->nodes[i]->data;
+            if (item->id == id) {
                 return 1;
             }
         }
@@ -83,50 +88,61 @@ static void test_find_in_area() {
     float radius = 2.f;
     Vec2 pos = (Vec2) {4.f, 4.f};
 
-    Creature *ref = crt_create(0);
-    ref->pos = pos;
+    TestItem ref = {0, pos};
 
-    Vec2 nw = {ref->pos.x - radius, ref->pos.y - radius};
-    Vec2 se = {ref->pos.x + radius, ref->pos.y + radius};
-    // printf("ref: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", ref->pos.x, ref->pos.y, nw.x, nw.y, se.x, se.y);
+    Vec2 nw = {ref.pos.x - radius, ref.pos.y - radius};
+    Vec2 se = {ref.pos.x + radius, ref.pos.y + radius};
+    // printf("ref: {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", ref.pos.x, ref.pos.y, nw.x, nw.y, se.x, se.y);
 
     // inside
-    Creature *crt1 = crt_create(1);
-    crt1->pos = (Vec2) {pos.x + (radius / 2.f), pos.y + (radius / 2.f)};
+    TestItem itm1 = {
+        .id=1,
+        .pos=(Vec2) {pos.x + (radius / 2.f), pos.y + (radius / 2.f)}
+    };
 
-    Creature *crt2 = crt_create(2);
-    crt2->pos = (Vec2) {pos.x + radius, pos.y + radius};
+    TestItem itm2 = {
+        .id=2,
+        .pos=(Vec2) {pos.x + radius, pos.y + radius}
+    };
 
-    Creature *crt3 = crt_create(3);
-    crt3->pos = (Vec2) {pos.x - radius, pos.y - radius};
+    TestItem itm3 = {
+        .id=3,
+        .pos=(Vec2) {pos.x - radius, pos.y - radius}
+    };
 
     // outside
-    Creature *crt4 = crt_create(4);
-    crt4->pos = (Vec2) {1.f, 1.f};
+    TestItem itm4 = {
+        .id=4,
+        .pos=(Vec2) {1.f, 1.f}
+    };
 
-    Creature *crt5 = crt_create(5);
-    crt5->pos = (Vec2) {pos.x, pos.y + radius + 0.1};
+    TestItem itm5 = {
+        .id=5,
+        .pos=(Vec2) {pos.x, pos.y + radius + 0.1}
+    };
 
-    Creature *crt6 = crt_create(6);
-    crt6->pos = (Vec2) {pos.x - radius - 0.1, pos.y};
+    TestItem itm6 = {
+        .id=6,
+        .pos=(Vec2) {pos.x - radius - 0.1, pos.y}
+    };
 
-    Creature *inside[3] = {crt1, crt2, crt3};
-    Creature *outside[3] = {crt4, crt5, crt6};
+    TestItem *inside[3]  = {&itm1, &itm2, &itm3};
+    TestItem *outside[3] = {&itm4, &itm5, &itm6};
 
     QuadList *list = qlist_create(1);
     int res, i;
 
-    res = qtree_insert(tree, ref);
+    res = qtree_insert(tree, &ref, ref.pos);
     assert(res == QUAD_INSERTED);
 
     // insert nodes
     for (i = 0; i < 3; i++) {
-        res = qtree_insert(tree, inside[i]);
+        res = qtree_insert(tree, inside[i], inside[i]->pos);
         // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", inside[i]->id, inside[i]->pos.x, inside[i]->pos.y, nw.x, nw.y, se.x, se.y);
         assert(res == QUAD_INSERTED);
     }
     for (i = 0; i < 3; i++) {
-        res = qtree_insert(tree, outside[i]);
+        res = qtree_insert(tree, outside[i], outside[i]->pos);
         // printf("(%d): {%f, %f}, nw: {%f, %f}, se: {%f, %f}\n", outside[i]->id, outside[i]->pos.x, outside[i]->pos.y, nw.x, nw.y, se.x, se.y);
         assert(res == QUAD_INSERTED);
     }

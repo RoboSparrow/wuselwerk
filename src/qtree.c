@@ -19,7 +19,7 @@ void qnode_print(FILE *fp, QuadNode *node);
  * Checks if a pos is with an node boundary.
  */
 static int _node_contains(QuadNode *node, Vec2 pos) {
-    // printf(" -- nw: {%f, %f}, se: {%f, %f}, crt: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
+    // printf(" -- nw: {%f, %f}, se: {%f, %f}, pos: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
     return node != NULL
         && pos.x >= node->self_nw.x
         && pos.x < node->self_se.x
@@ -31,7 +31,7 @@ static int _node_contains(QuadNode *node, Vec2 pos) {
  * Gets the matching quadrant child node for a given position.
  */
 static QuadNode *_node_quadrant(QuadNode *node, Vec2 pos) {
-    // printf("-- nw: {%f, %f}, se: {%f, %f}, crt: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
+    // printf("-- nw: {%f, %f}, se: {%f, %f}, pos: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
     if(_node_contains(node->nw, pos)) {
         return node->nw;
     }
@@ -48,34 +48,36 @@ static QuadNode *_node_quadrant(QuadNode *node, Vec2 pos) {
 }
 
 /**
- * Replaces an entity node.
+ * Clears data properites in a node
  */
-static void _node_reset(QuadTree *tree, QuadNode *node) {
-    crt_destroy(node->crt);
-    node->crt = NULL;
+static void _node_clear_data(QuadNode *node) {
+    node->pos = (Vec2) {INFINITY, INFINITY};
+    node->data = NULL;
 }
+
 
 /**
  * Inserts an entity into a tree node. The node might be split into four childs, or the  already existing entity in this node might be replaced
  * Note: The position bounds must be checked by callee (qtree_insert())
  */
-static int _node_insert(QuadTree *tree, QuadNode *node, Creature *crt) {
-    if (!tree || !crt) { // !node?
+static int _node_insert(QuadTree *tree, QuadNode *node, void *data, Vec2 pos) {
+    if (!tree || !node || !data) {
         return QUAD_FAILED;
     }
 
     // 1. insert into THIS (empty) node (just created before)
     if (qnode_isempty(node)) {
-        node->crt = crt;
+        node->pos = pos;
+        node->data = data;
         return QUAD_INSERTED;
     }
 
     // 2. replace THIS node OR split and insert into CHILDREN
     if (qnode_isleaf(node)) {
         // 2.1 pos match: replace
-        if (node->crt->pos.x == crt->pos.x && node->crt->pos.y == crt->pos.y) {
-            _node_reset(tree, node);
-            node->crt = crt;
+        if (node->pos.x == pos.x && node->pos.y == pos.y) {
+            node->pos = pos;
+            node->data = data;
             return QUAD_REPLACED;
         }
 
@@ -85,16 +87,16 @@ static int _node_insert(QuadTree *tree, QuadNode *node, Creature *crt) {
         }
 
         // 2.3. insertcurrent node
-        return _node_insert(tree, node, crt);
+        return _node_insert(tree, node, data, pos);
     }
 
     // 3. insert into one of THIS CHILDREN
     if (qnode_ispointer(node)) {
-        QuadNode *child = _node_quadrant(node, crt->pos);
+        QuadNode *child = _node_quadrant(node, pos);
         if(!child) {
              return QUAD_FAILED;
         }
-        return _node_insert(tree, child, crt);
+        return _node_insert(tree, child, data, pos);
     }
 
     return QUAD_FAILED;
@@ -118,7 +120,8 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
         return QUAD_FAILED;
     }
 
-    Creature *old = node->crt;
+    void *data = node->data;
+    Vec2 pos = node->pos;
 
     // nw(x,y)            hw
     // x────────────┬────────────┐
@@ -157,9 +160,8 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
     node->sw = sw;
     node->se = se;
 
-    node->crt = NULL;
-
-    return _node_insert(tree, node, old); // inserts into one of the children
+    _node_clear_data(node);
+    return _node_insert(tree, node, data, pos); // inserts into one of the children
 }
 
 /**
@@ -172,7 +174,7 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
     }
 
     if(qnode_isleaf(node)) {
-        if (node->crt->pos.x == pos.x && node->crt->pos.y == pos.y) {
+        if (node->pos.x == pos.x && node->pos.y == pos.y) {
             return node;
         }
     }
@@ -221,7 +223,7 @@ static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list)
 
     // this is a data node (and thus without children)
     if(qnode_isleaf(node)) {
-        if (vec2_within(node->crt->pos, nw, se)){
+        if (vec2_within(node->pos, nw, se)){
             qlist_append(list, node);
         }
         return;
@@ -260,13 +262,10 @@ QuadNode *qnode_create(QuadNode *parent) {
     node->self_nw  = (Vec2){0};
     node->self_se  = (Vec2){0};
 
-    node->center  = (Vec2){0};
-
     node->width  = 0;
     node->height  = 0;
 
-    node->crt = NULL;
-
+    _node_clear_data(node);
     return node;
 }
 
@@ -287,15 +286,14 @@ void qnode_destroy(QuadNode *node) {
         qnode_destroy(node->se);
     }
 
-    // !!!! We  don not manage the memory of the item pointer here !!!!
-    // crt_destroy(node->crt);
+    // We  don not manage the memory of the data item
+    _node_clear_data(node);
 
-    node->crt = NULL;
     freez(node);
 }
 
 int qnode_isleaf(QuadNode *node) {
-    return node->crt != NULL;
+    return node->data != NULL;
 }
 
 // TODO rename
@@ -340,8 +338,6 @@ int qnode_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
     node->self_nw = nw;
     node->self_se = se;
-    node->center.x = nw.x + ((se.x - nw.x) / 2);
-    node->center.y = nw.y + ((se.y - nw.y) / 2);
     node->width  = fabs(nw.x - se.x);
     node->height = fabs(nw.y - se.y);
 }
@@ -400,17 +396,17 @@ void qtree_destroy(QuadTree *tree) {
     freez(tree);
 }
 
-int qtree_insert(QuadTree *tree, Creature *crt) {
-    if (!tree || !crt) {
+int qtree_insert(QuadTree *tree, void *data, Vec2 pos) {
+    if (!tree || !data) {
         return QUAD_FAILED;
     }
 
     // check if pos is in tree bounds
-    if(!_node_contains(tree->root, crt->pos)) {
+    if(!_node_contains(tree->root, pos)) {
         return QUAD_FAILED;
     }
 
-    int status = _node_insert(tree, tree->root, crt);
+    int status = _node_insert(tree, tree->root, data, pos);
     if (status == QUAD_INSERTED) {
         tree->length++;
     }
@@ -473,10 +469,16 @@ void qnode_print(FILE *fp, QuadNode *node) {
     fprintf(fp, "parent: '%c', ", (node->parent) ? 'y' : '-');
     fprintf(fp, "nw: '%c', sw: '%c', se: '%c', nw: '%c', ", (node->nw) ? 'y' : '-', (node->sw) ? 'y' : '-', (node->se) ? 'y' : '-', (node->ne) ? 'y' : '-');
 
-    if (node->crt) {
-        fprintf(fp, "crt: {id: %d, x: %f, y: %f}}", node->crt->id, node->crt->pos.x, node->crt->pos.y);
+    if (node->pos.x < INFINITY) {
+        fprintf(fp, "pos: {%f, %f}", node->pos.x, node->pos.y);
     } else {
-        fprintf(fp, "crt: '-'}");
+        fprintf(fp, "pos: {INF..,INF..}}");
+    }
+
+    if (node->data) {
+        fprintf(fp, "data: %p}", node->data);
+    } else {
+        fprintf(fp, "data: '-'}");
     }
 }
 
@@ -562,7 +564,7 @@ void qlist_print(FILE *fp, QuadList *list) {
     if (list->nodes) {
         for(size_t i = 0; i < list->len; i++) {
             if (list->nodes[i]) {
-                printf("{center:{%f, %f}}", list->nodes[i]->center.x, list->nodes[i]->center.y);
+                printf("{pos:{%f, %f}}", list->nodes[i]->pos.x, list->nodes[i]->pos.y);
             }
             printf("%s", (i < list->len -1) ? ", " : "");
         }

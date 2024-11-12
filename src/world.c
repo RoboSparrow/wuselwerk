@@ -102,7 +102,7 @@ int world_update(App *app, World *world) {
 
         for (int i = 0; i < world->len; i++) {
             if (world->population[i]) {
-                qtree_insert(world->qtree, world->population[i]);
+                qtree_insert(world->qtree, world->population[i], world->population[i]->pos);
             }
         }
     }
