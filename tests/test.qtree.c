@@ -97,6 +97,8 @@ static void test_tree_insert() {
 
         // verify node idendity
         assert(tree->root->data != NULL);
+        assert(tree->root->pos.x == itm1.pos.x);
+        assert(tree->root->pos.y == itm1.pos.y);
 
         TestItem *item = (TestItem*) tree->root->data;
         assert(item->id == itm1.id);
@@ -118,6 +120,9 @@ static void test_tree_insert() {
 
         // verify node idendity
         assert(tree->root->ne->data != NULL);
+        assert(tree->root->ne->pos.x == itm1.pos.x);
+        assert(tree->root->ne->pos.y == itm1.pos.y);
+
         TestItem *item = (TestItem*) tree->root->ne->data;
         assert(item->id == itm1.id);
         DONE();
@@ -136,6 +141,8 @@ static void test_tree_insert_outside() {
     res = qtree_insert(tree, &itm, itm.pos);
 
     assert(tree->root->data == NULL);
+    assert(tree->root->pos.x == INFINITY);
+    assert(tree->root->pos.y == INFINITY);
     assert(res == QUAD_FAILED);
 
     qtree_destroy(tree);
@@ -159,7 +166,10 @@ static void test_tree_insert_replace() {
 
         assert(res == QUAD_INSERTED);
         assert(tree->length == 1);
+
         assert(tree->root->data != NULL);
+        assert(tree->root->pos.x == itm1.pos.x);
+        assert(tree->root->pos.y == itm1.pos.y);
 
         item = (TestItem*) tree->root->data;
         assert(item->id == itm1.id);
@@ -169,7 +179,10 @@ static void test_tree_insert_replace() {
 
         assert(res == QUAD_REPLACED);
         assert(tree->length == 1);
+
         assert(tree->root->data != NULL);
+        assert(tree->root->pos.x == itm2.pos.x);
+        assert(tree->root->pos.y == itm2.pos.y);
 
         item = (TestItem*) tree->root->data;
         assert(item->id == itm2.id);
