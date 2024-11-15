@@ -1,6 +1,6 @@
 # Wuselwerk
 
-W.I.P. Sandbox simulation using [SDL](https://www.libsdl.org/)
+W.I.P. Sandbox simulation using ~~[SDL](https://www.libsdl.org/)~~ OpenGL/GLFW
 
 ---
 
@@ -9,7 +9,7 @@ W.I.P. Sandbox simulation using [SDL](https://www.libsdl.org/)
 ### Install
 
 ```bash
-sudo apt install libsdl2-dev libsdl2-ttf-dev
+sudo apt-get install libglfw3-dev freeglut3-dev libglew-dev
 ```
 
 ### Build
@@ -28,12 +28,11 @@ make clean && make
 
 ## Documentation
 
- * [SDL2](https://wiki.libsdl.org/SDL2/)
- * [SDL2 TTF](https://wiki.libsdl.org/SDL2_ttf/)
+ * [OpenGL](https://docs.gl/)
+ * [GLFW](https://www.glfw.org/docs/latest/)
 
 ---
 
 ## Acknowledgements
 
- * [Simple Direct Media Layer](https://www.libsdl.org/)
- * [Ubuntu Monospace](https://design.ubuntu.com/font)
+ * [OpenGL](https://www.opengl.org/)
