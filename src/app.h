@@ -1,27 +1,23 @@
 #ifndef __APP_H__
 #define __APP_H__
 
-#include <SDL2/SDL.h>
-
 #define APP_MAX_FPS 60
 #define APP_BUILD_INFO_PATH "./build"
 
+#define APP_STR_LEN 128
+
 typedef struct App {
-    char name[128];
-    char version[128];
-    SDL_Rect window;
-    SDL_Color bg_color;
-    SDL_Color fg_color;
+    char name[APP_STR_LEN];
+    char version[APP_STR_LEN];
 
-    char *font_path;
-    unsigned int font_sz; // font size (pt)
+    size_t fps; // seconds
+    size_t debug;
 
-    unsigned int fps; // seconds
     char running;
     char paused;
 } App;
 
-int app_get_version(App *app);
+App *app_create(const char *name);
 void app_destroy(App *app);
 
 #endif

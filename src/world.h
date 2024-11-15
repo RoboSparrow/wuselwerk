@@ -1,8 +1,6 @@
 #ifndef __WORLD_H__
 #define __WORLD_H__
 
-#include <SDL2/SDL_ttf.h>
-
 #include "app.h"
 #include "vec2.h"
 
@@ -36,6 +34,6 @@ void world_print(FILE *fp, World *world);
 // Main loop
 
 int world_update(App *app, World *world);
-int world_draw(App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+int world_draw(App *app, World *world);
 
 #endif

@@ -7,8 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h> // getopt
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <GLFW/glfw3.h>
 
 #include "app.h"
 #include "ui.h"
@@ -25,6 +24,8 @@
 
 #define FONT_PATH "font/UbuntuMono-Regular.ttf"
 #define FONT_SZ 12
+
+double then;
 
 static void configure(App *app, World *world, int argc, char **argv) {
     if (!app || !world) {
@@ -74,50 +75,82 @@ static void configure(App *app, World *world, int argc, char **argv) {
             break;
         }
     }
+}
 
-    // parse version info
-    ival = app_get_version(app);
-    if (ival) {
-        LOG_ERROR_F("can't read build info from file '%s'", APP_BUILD_INFO_PATH);
+/**
+ * key input callback
+ * @see https://www.glfw.org/docs/latest/input_guide.html#input_key
+ * @see https://www.glfw.org/docs/latest/group__keys.html
+ */
+static void _gl_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
+    App *app = (App*) glfwGetWindowUserPointer(window);
+
+    if (action == GLFW_PRESS) {
+        switch (key) {
+            case GLFW_KEY_ESCAPE:
+            case GLFW_KEY_Q:
+                LOG_INFO("Closing app");
+                glfwSetWindowShouldClose(window, GL_TRUE);
+            break;
+            case GLFW_KEY_D:
+                LOG_INFO("toggling debug mode");
+                if (app) {
+                    app->debug = !app->debug;
+                }
+            break;
+        }
     }
 }
 
+static void _gl_error_callback(int err, const char* msg) {
+    LOG_ERROR_F("error %d: %s", err, msg);
+}
+
+void _gl_resize_callback(GLFWwindow* window, int width, int height) {
+    glViewport(0, 0, width, height);
+}
+
 int main (int argc, char **argv) {
-    SDL_Window *window;
-    SDL_Renderer *renderer;
-    TTF_Font *font;
-    SDL_Event ev;
+    GLFWwindow* window;
 
-    int prev = SDL_GetTicks();
+    // world
 
-    World *world = world_create(rand_range(1, 25), (Vec2){0}, (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT});
+    World *world = world_create(rand_range(2, 25), (Vec2){0}, (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT});
 
-    App app =  {
-        .name="Test window",
-        .window={
-            SDL_WINDOWPOS_UNDEFINED, SDL_WINDOWPOS_UNDEFINED,
-            WORLD_WIDTH(world), WORLD_HEIGHT(world)
-        },
+    // app
 
-        .bg_color={0, 0, 0, SDL_ALPHA_OPAQUE},
-        .fg_color={255, 255, 255, SDL_ALPHA_OPAQUE},
+    App *app = app_create("Test window");
+    app->fps = 24; // cinematic film
+    app->debug = 0;
+    app->running = 1;
+    app->paused = 0;
 
-        .font_path = FONT_PATH,
-        .font_sz = FONT_SZ, // point size for ttf font
+    configure(app, world, argc, argv);
 
-        .fps=24, // cinematic film
-        .running=1,
-        .paused=0,
-    };
+    // glfw window
 
-    configure(&app, world, argc, argv);
+    glfwSetErrorCallback(_gl_error_callback);
 
-    window = ui_init_window(&app, world);
-    renderer = ui_init_renderer(&app, window);
-    font = ui_init_font(&app);
+    window = ui_init_window(app, world);
+    glfwMakeContextCurrent(window);
+    glfwSetWindowUserPointer (window, app);
+
+    glfwSetFramebufferSizeCallback(window, _gl_resize_callback);
+    glfwSetKeyCallback(window, _gl_key_callback);
+
+    // gl projection coordinates
+
+    int fw, fh;
+    glMatrixMode(GL_PROJECTION);
+    glLoadIdentity();
+
+    glfwGetFramebufferSize(window, &fw, &fh);
+    glOrtho(0, fw, 0, fh, -1, 1);
 
     float ww = WORLD_WIDTH(world);
     float wh = WORLD_HEIGHT(world);
+
+    // population
 
     Creature *crt;
     CrtType type;
@@ -127,77 +160,65 @@ int main (int argc, char **argv) {
     for (int i = 0; i < world->len; i++) {
         rand_str(name, CRT_NAME_LEN);
         type = rand_range(1, CRT_TYPE_MAX - 1);
-        pos.x = rand_range_f(0, app.window.w);
-        pos.y = rand_range_f(0, app.window.h);
+        pos.x = rand_range_f(0, ww);
+        pos.y = rand_range_f(0, wh);
 
         crt = crt_birth(i, name, type, pos);
         crt->agility = rand_range_f(0, 1.f);
         crt->perception = (ww > wh) ? wh / 10.f : ww / 10.f;
-        crt_random_targ(crt, &app, 100.f); // TODO radius perception?
+        crt_random_targ(crt, world, 100.f); // TODO radius perception?
         world->population[i] = crt;
         // crt_print(stdout, crt); // dev
     }
 
-    // render changes
-    SDL_RenderPresent(renderer);
+    // main loop
 
     QuadList *neighbours = qlist_create(5);
     EXIT_IF(neighbours == NULL, "failed to allocate memory for QuadList");
 
-    while (app.running) {
-        while (SDL_PollEvent(&ev) != 0)  {
+    double now, delta;
+    double max = 1.0 / app->fps;
+    then = glfwGetTime();
 
-            if (ev.type == SDL_QUIT) {
-                app.running = 0;
-                break;
-            }
+    while (!glfwWindowShouldClose(window)) {
 
-            if (ev.type == SDL_KEYDOWN) {
-                switch (ev.key.keysym.sym) {
-                    case SDLK_SPACE:
-                        app.paused = !app.paused;
-                        // printf(" - app paused: %d\n", app.paused);
-                    break;
-                }
-            }
-
-        }
-
-        if (app.paused) {
-            world_update(&app, world);
-            world_draw(&app, world, renderer, font);
-            SDL_RenderPresent(renderer);
+        now = glfwGetTime();
+        if(now - then < max) {
             continue;
         }
 
-        if (SDL_GetTicks() - prev < 1000/app.fps) {
+        if (app->paused) {
+            world_update(app, world);
+            world_draw(app, world);
             continue;
         }
 
-        SDL_SetRenderDrawColor(renderer, app.bg_color.r, app.bg_color.g, app.bg_color.b, app.bg_color.a);
-        SDL_RenderClear(renderer);
+        glClear(GL_COLOR_BUFFER_BIT);
 
-        world_update(&app, world);
-        world_draw(&app, world, renderer, font);
+        world_update(app, world);
+        world_draw(app, world);
 
         for (int i = 0; i < world->len; i++) {
-            crt_update(world->population[i], &app, world);
-            crt_draw(world->population[i], &app, world, renderer, font);
+            crt_update(world->population[i], app, world);
+            crt_draw(world->population[i], app, world);
 
-            crt_find_neighbours(world->population[i], &app, world, neighbours);
-            crt_draw_neighbours(world->population[i], neighbours, &app, world, renderer, font);
+            crt_find_neighbours(world->population[i], app, world, neighbours);
+            crt_draw_neighbours(world->population[i], neighbours, app, world);
         }
 
         // render changes
-        SDL_RenderPresent(renderer);
-        prev = SDL_GetTicks();
+        then = now;
+
+        glEnd();
+        glfwSwapBuffers(window);
+        glfwPollEvents();
 
     } // while
 
     qlist_destroy(neighbours);
     world_destroy(world);
-    ui_exit(&app, window, renderer, font);
-    app_destroy(&app);
+    ui_exit(app, window);
+    app_destroy(app);
 
   return 0;
 }

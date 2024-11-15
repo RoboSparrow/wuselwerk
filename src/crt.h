@@ -1,16 +1,12 @@
 #ifndef __CRT_H__
 #define __CRT_H__
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
-
 #include "app.h"
 #include "world.h"
 #include "qtree.h"
 #include "vec2.h"
 
-#define CRT_MIN_W 10.f
-#define CRT_MIN_H 10.f
+#define CRT_MIN_SIZE 10.f
 #define CRT_MIN_AGILITY 0
 #define CRT_MIN_PERCEPTION 0
 
@@ -51,8 +47,7 @@ typedef struct Creature {
     CrtStatus status;
 
     float agility;
-    float w;
-    float h;
+    float size;
 
     float perception;
 
@@ -60,7 +55,7 @@ typedef struct Creature {
     Vec2 targ;
 } Creature;
 
-#define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
+#define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
 
 // Live Cycle
 
@@ -68,7 +63,7 @@ Creature *crt_create(unsigned int id);
 Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos);
 void crt_destroy(Creature *crt);
 
-int crt_random_targ(Creature *crt, App *app, float max_radius);
+int crt_random_targ(Creature *crt, World *world, float max_radius);
 
 // Debug
 
@@ -77,13 +72,13 @@ void crt_print(FILE *fp, Creature *crt);
 // Main loop
 
 int crt_update(Creature *crt, App *app, World *world);
-int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+int crt_draw(Creature *crt, App *app, World *world);
 
 ////
 // Relationships
 ////
 
 QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list) ;
-int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font);
+int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world);
 
 #endif

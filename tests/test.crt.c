@@ -36,8 +36,7 @@ void test_crt(int argc, char **argv) {
         assert(c->type == CRT_TYPE_NONE);
         assert(c->status == CRT_STATUS_NONE);
         assert(c->agility == 0.0);
-        assert(c->w == 0.0);
-        assert(c->h == 0.0);
+        assert(c->size == 0.0);
         assert(c->pos.x == CRT_POS_NONE);
         assert(c->pos.y == CRT_POS_NONE);
         assert(c->targ.x == CRT_POS_NONE);
@@ -59,8 +58,7 @@ void test_crt(int argc, char **argv) {
         assert(c->type == CRT_TYPE_HERBIVORE);
         assert(c->status == CRT_STATUS_ALIVE);
         assert(c->agility == CRT_MIN_AGILITY);
-        assert(c->w == CRT_MIN_W);
-        assert(c->h == CRT_MIN_W);
+        assert(c->size == CRT_MIN_SIZE);
         assert(c->pos.x == 1.0);
         assert(c->pos.y == 2.0);
         assert(c->targ.x == 1.0);

@@ -1,9 +1,9 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <math.h>
+#include <string.h>
 
-#include <SDL2/SDL.h>
-#include <SDL2/SDL_ttf.h>
+#include <GLFW/glfw3.h>
 
 #include "world.h"
 #include "app.h"
@@ -42,12 +42,11 @@ Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos) {
     crt->status = CRT_STATUS_ALIVE;
 
     crt->agility = CRT_MIN_AGILITY;
-    crt->w = CRT_MIN_W;
-    crt->h = CRT_MIN_H; // todo, per type
+    crt->size = CRT_MIN_SIZE;
 
     crt->perception = CRT_MIN_PERCEPTION;
 
-    crt->pos = pos; // valid cp struct!
+    crt->pos = pos;
     crt->targ = pos;
     return crt;
 }
@@ -57,16 +56,16 @@ void crt_destroy(Creature *crt) {
     freez(crt);
 }
 
-int crt_random_targ(Creature *crt, App *app, float max_radius) {
-    if (!crt || !app) {
+int crt_random_targ(Creature *crt, World *world, float max_radius) {
+    if (!crt || !world) {
         return 1;
     }
 
-    Vec2 delta = vec2_rand_from(crt->pos, max_radius); // TODO radius perception?
+    Vec2 delta = vec2_rand_from(crt->pos, max_radius);
 
     delta = vec2_add(crt->pos, delta);
-    delta.x = clamp_f(delta.x, 0, app->window.w);
-    delta.y = clamp_f(delta.y, 0, app->window.h);
+    delta.x = clamp_f(delta.x, 0, WORLD_WIDTH(world));
+    delta.y = clamp_f(delta.y, 0, WORLD_HEIGHT(world));
 
     crt->targ = delta;
     return 0;
@@ -92,7 +91,7 @@ int crt_update(Creature *crt, App *app, World *world) {
 
     // overshoot
     if (fabs(mag) < speed) {
-        crt_random_targ(crt, app, 200.f); //TODO radus, perception
+        crt_random_targ(crt, world, 200.f);
     }
 
     return 0;
@@ -117,8 +116,7 @@ void crt_print(FILE *fp, Creature *crt) {
         " type: %s,"
         " status: %s,"
         " agility: %f,"
-        " width: %f,"
-        " height: %f,"
+        " size: %f,"
         " perception: %f,"
         " pos: {x:%f, y:%f},"
         " targ: {x:%f, y:%f}"
@@ -128,54 +126,69 @@ void crt_print(FILE *fp, Creature *crt) {
         CRT_TYPE_NAME(crt->type),
         CRT_STATUS_NAME(crt->status),
         crt->agility,
-        crt->w, crt->h,
+        crt->size,
         crt->perception,
         crt->pos.x, crt->pos.y,
         crt->targ.x, crt->targ.y
     );
 }
 
-int crt_draw(Creature *crt, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font) {
-    if (!crt || !app || !world || !renderer || !font) {
+int crt_draw(Creature *crt, App *app, World *world) {
+    if (!crt || !app || !world) {
         return -1;
     }
 
-    int ret;
-    float x = crt->pos.x - crt->w / 2;
-    float y = crt->pos.y - crt->h / 2;
+    int ret = 0;
+    float hsz = crt->size / 2;
+    float x = crt->pos.x - hsz;
+    float y = crt->pos.y - hsz;
 
     // 1. draw pos
 
-    SDL_Rect prect = { (int) x, (int) y, (int) crt->w, (int) crt->h };
-
     switch (crt->type) {
         case CRT_TYPE_HERBIVORE:
-            SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
+            glColor4f(0.0, 1.0, 0.0, 1.0);
+            glPointSize(crt->size);
         break;
         case CRT_TYPE_CARNIVORE:
-            SDL_SetRenderDrawColor(renderer, 0, 0, 255, 255);
+            glColor4f(0.0, 0.0, 1.0, 1.0);
+            glPointSize(crt->size);
         break;
         default:
-            SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+            glColor4f(1.0, 0.0, 0.0, 1.0);
+            glPointSize(crt->size);
     }
-    ret = SDL_RenderFillRect(renderer, &prect);
 
-    // 2. draw targ;
+    glBegin(GL_POINTS);
+    glVertex2f(x, y);
+    glEnd();
+
+    if (!app->debug) {
+        return ret;
+    }
+
+    // 2. draw line between pos and targ
+
+    glLineWidth(1.0);
+    glColor4f(0.15, 0.15, 0.15, 1.0);
+
+    glBegin(GL_LINES);
+    glVertex2f(x, y);
+    glVertex2f(crt->targ.x - 1, crt->targ.y - 1);
+    glEnd();
+
+    // 3. draw targ
 
     if(vec2_equals(crt->pos, crt->targ)) {
         return ret;
     }
 
-    x = crt->targ.x - crt->w / 2;
-    y = crt->targ.y - crt->h / 2;
+    glColor4f(0.7, 0.7, 0.7, 1.0);
+    glPointSize(2);
 
-    SDL_Rect trect = { (int) x, (int) y, (int) crt->w, (int) crt->h };
-    SDL_SetRenderDrawColor(renderer, 125, 125, 125, 255);
-    SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) crt->targ.x, (int) crt->targ.y);
-    SDL_RenderDrawRect(renderer, &trect);
-
-    // reset
-    // SDL_SetRenderDrawColor(renderer, app->fg_color.r, app->fg_color.g, app->fg_color.b, app->fg_color.a);
+    glBegin(GL_POINTS);
+    glVertex2f(crt->targ.x - 1, crt->targ.y - 1);
+    glEnd();
 
     return ret;
 }
@@ -199,32 +212,57 @@ QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *l
     return qtree_find_in_area(world->qtree, crt->pos, crt->perception, list);
 }
 
-int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world, SDL_Renderer *renderer, TTF_Font *font){
-    if (!crt || !list || !app || !world || !renderer || !font) {
+int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world) {
+    if (!crt || !list || !app || !world) {
         return -1;
     }
 
+    int ret = 0;
+    if (!app->debug) {
+        return ret;
+    }
+
+    float hsz = crt->size / 2;
+    float x = crt->pos.x - hsz;
+    float y = crt->pos.y - hsz;
+
     // 1. draw neighbour area rect
-    SDL_SetRenderDrawColor(renderer, 0, 0, 125, 255);
-    SDL_Rect rect = {
-        (int) (crt->pos.x - crt->perception),
-        (int) (crt->pos.y - crt->perception),
-        (int) crt->perception * 2,
-        (int) crt->perception * 2
-    };
-    SDL_RenderDrawRect(renderer, &rect);
+    glColor4f(0.0, 0.0, 0.5, 1.0);
+    glLineWidth(1.0);
+
+    glBegin(GL_LINES);
+    // top
+    glVertex2f(x - crt->perception, y - crt->perception);
+    glVertex2f(x + crt->perception, y - crt->perception);
+    // right
+    glVertex2f(x + crt->perception, y - crt->perception);
+    glVertex2f(x + crt->perception, y + crt->perception);
+    // bottom
+    glVertex2f(x + crt->perception, y + crt->perception);
+    glVertex2f(x - crt->perception, y + crt->perception);
+    // left
+    glVertex2f(x - crt->perception, y + crt->perception);
+    glVertex2f(x - crt->perception, y - crt->perception);
+    glEnd();
 
     // 4. draw neighbour relationships
     Creature *other;
-    SDL_SetRenderDrawColor(renderer, 125, 0, 0, 255);
+    glColor4f(0.5, 0.0, 0.0, 1.0);
+    glLineWidth(1.0);
+
+    float ohz;
     for (size_t i = 0; i < list->len; i++) {
         if (list->nodes[i] && list->nodes[i]->data) {
             other = (Creature*) list->nodes[i]->data;
+            ohz = other->size / 2;
             if(other->id != crt->id) {
-                SDL_RenderDrawLine(renderer, (int) crt->pos.x, (int) crt->pos.y, (int) other->pos.x, (int) other->pos.y);
+                glBegin(GL_LINES);
+                glVertex2f(crt->pos.x - hsz, crt->pos.y - hsz);
+                glVertex2f(other->pos.x - ohz, other->pos.y - ohz);
+                glEnd();
             }
         }
     }
 
-    return 0;
+    return ret;
 }

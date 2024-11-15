@@ -4,9 +4,10 @@ SRCDIR=src
 INCDIR=$(SRCDIR)
 BIN=wusel
 
+
 CFLAGS=-Wall -Wextra -Werror -Wpedantic -pedantic-errors
 LOPT=-lm
-LOPT+= $(shell pkg-config sdl2 --cflags --libs) -lSDL2_ttf
+LOPT+=$(shell pkg-config --libs glfw3) -lGL -lm -lGLU -lGLEW
 
 HEADERS=$(INCDIR)/utils.h $(INCDIR)/vec2.h $(INCDIR)/app.h $(INCDIR)/world.h $(INCDIR)/qtree.h $(INCDIR)/ui.h $(INCDIR)/crt.h
 OBJECTS=$(SRCDIR)/utils.o $(SRCDIR)/vec2.o $(SRCDIR)/app.o $(SRCDIR)/world.o $(SRCDIR)/qtree.o $(SRCDIR)/ui.o $(SRCDIR)/crt.o
