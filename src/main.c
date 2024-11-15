@@ -121,7 +121,7 @@ int main (int argc, char **argv) {
 
     App *app = app_create("Test window");
     app->fps = 24; // cinematic film
-    app->debug = 0;
+    app->debug = 1;
     app->running = 1;
     app->paused = 0;
 
