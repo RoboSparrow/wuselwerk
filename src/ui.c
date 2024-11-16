@@ -143,7 +143,7 @@ int gui_draw(struct nk_glfw *gui, App *app, World *world) {
 
     nk_glfw3_new_frame(gui);
     // TODO NK_WINDOW_CLOSABLE
-    nk_flags flags = NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE|NK_WINDOW_CLOSABLE; // declare settings once in App
+    nk_flags flags = NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE; // declare settings once in App
     nk_bool open = nk_begin(ctx, "Demo", nk_rect(50, 50, 230, 250), flags);
 
     if(!open) {
