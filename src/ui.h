@@ -6,8 +6,8 @@
 #include "app.h"
 #include "world.h"
 
-GLFWwindow *ui_init_window(App *app, World *world);
-void ui_exit(App *app, GLFWwindow *window);
+GLFWwindow *ui_init(App *app, World *world);
+void ui_exit(GLFWwindow *window);
 
 
 #endif

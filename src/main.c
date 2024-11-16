@@ -77,45 +77,16 @@ static void configure(App *app, World *world, int argc, char **argv) {
     }
 }
 
-/**
- * key input callback
- * @see https://www.glfw.org/docs/latest/input_guide.html#input_key
- * @see https://www.glfw.org/docs/latest/group__keys.html
- */
-static void _gl_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    App *app = (App*) glfwGetWindowUserPointer(window);
-
-    if (action == GLFW_PRESS) {
-        switch (key) {
-            case GLFW_KEY_ESCAPE:
-            case GLFW_KEY_Q:
-                LOG_INFO("Closing app");
-                glfwSetWindowShouldClose(window, GL_TRUE);
-            break;
-            case GLFW_KEY_D:
-                LOG_INFO("toggling debug mode");
-                if (app) {
-                    app->debug = !app->debug;
-                }
-            break;
-        }
-    }
-}
-
-static void _gl_error_callback(int err, const char* msg) {
-    LOG_ERROR_F("error %d: %s", err, msg);
-}
-
-void _gl_resize_callback(GLFWwindow* window, int width, int height) {
-    glViewport(0, 0, width, height);
-}
-
 int main (int argc, char **argv) {
     GLFWwindow* window;
 
     // world
 
-    World *world = world_create(rand_range(2, 25), (Vec2){0}, (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT});
+    World *world = world_create(
+        rand_range(2, 25),
+        (Vec2){0},
+        (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT}
+    );
 
     // app
 
@@ -129,14 +100,9 @@ int main (int argc, char **argv) {
 
     // glfw window
 
-    glfwSetErrorCallback(_gl_error_callback);
-
-    window = ui_init_window(app, world);
+    window = ui_init(app, world);
     glfwMakeContextCurrent(window);
     glfwSetWindowUserPointer (window, app);
-
-    glfwSetFramebufferSizeCallback(window, _gl_resize_callback);
-    glfwSetKeyCallback(window, _gl_key_callback);
 
     // gl projection coordinates
 
@@ -217,7 +183,7 @@ int main (int argc, char **argv) {
 
     qlist_destroy(neighbours);
     world_destroy(world);
-    ui_exit(app, window);
+    ui_exit(window);
     app_destroy(app);
 
   return 0;
