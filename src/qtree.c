@@ -248,7 +248,7 @@ static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list)
 QuadNode *qnode_create(QuadNode *parent) {
     QuadNode *node = malloc(sizeof(QuadNode));
     if (!node) {
-        LOG_ERROR("failed to allaocate memeory for QuadNode");
+        LOG_ERROR("failed to allaocate memory for QuadNode");
         return NULL;
     }
 

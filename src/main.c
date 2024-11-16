@@ -7,6 +7,7 @@
 #include <stdlib.h>
 #include <unistd.h> // getopt
 
+#include <GL/glew.h>
 #include <GLFW/glfw3.h>
 
 #include "app.h"
@@ -79,6 +80,7 @@ static void configure(App *app, World *world, int argc, char **argv) {
 
 int main (int argc, char **argv) {
     GLFWwindow* window;
+    struct nk_glfw *gui;
 
     // world
 
@@ -98,20 +100,13 @@ int main (int argc, char **argv) {
 
     configure(app, world, argc, argv);
 
-    // glfw window
+    // glfw, glew
 
     window = ui_init(app, world);
-    glfwMakeContextCurrent(window);
-    glfwSetWindowUserPointer (window, app);
+    //glfwSetWindowUserPointer (window, app);
 
-    // gl projection coordinates
-
-    int fw, fh;
-    glMatrixMode(GL_PROJECTION);
-    glLoadIdentity();
-
-    glfwGetFramebufferSize(window, &fw, &fh);
-    glOrtho(0, fw, 0, fh, -1, 1);
+    // gui
+    gui = gui_init(window);
 
     float ww = WORLD_WIDTH(world);
     float wh = WORLD_HEIGHT(world);
@@ -171,6 +166,8 @@ int main (int argc, char **argv) {
             crt_find_neighbours(world->population[i], app, world, neighbours);
             crt_draw_neighbours(world->population[i], neighbours, app, world);
         }
+
+        gui_draw(gui, app, world);
 
         // render changes
         then = now;

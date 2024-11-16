@@ -2,6 +2,7 @@ CC=gcc
 
 SRCDIR=src
 INCDIR=$(SRCDIR)
+EXTDIR=$(SRCDIR)/external
 BIN=wusel
 
 
@@ -26,13 +27,13 @@ $(BIN):	$(OBJECTS) $(SRCDIR)/main.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LOPT)
 
 %.o:	%.c $(HEADERS)
-	$(CC) $(COPT)-c $< -o $@ -I$(INCDIR)
+	$(CC) $(COPT)-c $< -o $@ -I$(INCDIR) -I$(EXTDIR)
 
 test:	$(TEST_O) $(TESTDIR)/main.o
 	$(CC) $(CFLAGS) -o $@ $^ $(LOPT)
 
 tests/%.o:	%.c $(TEST_H)
-	$(CC) $(COPT)-c $< -o $@ -I$(INCDIR) -Itests
+	$(CC) $(COPT)-c $< -o $@ -I$(INCDIR) -Itests -I$(EXTDIR)
 
 clean:
 	rm -f $(SRCDIR)/*.o $(TESTDIR)/*.o $(BIN) test
