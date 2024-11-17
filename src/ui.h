@@ -6,10 +6,10 @@
 #include "app.h"
 #include "world.h"
 
-GLFWwindow *ui_init(App *app, World *world);
+void ui_init(App *app, World *world);
 void ui_exit(GLFWwindow *window);
 
-struct nk_glfw *gui_init(GLFWwindow *window);
-int gui_draw(struct nk_glfw *gui, App *app, World *world);
+void gui_init(App *app);
+int gui_draw(App *app, World *world);
 void gui_exit(struct nk_glfw *gui);
 #endif

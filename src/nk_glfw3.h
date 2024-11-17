@@ -1,3 +1,11 @@
+/**
+ * This is a customised version of demo/glfw_opengl3/nuklear_glfw_gl3.h
+ * - changed nk_glfw3_init() so it accepts our App struct, removed call to glfwSetWindowUserPointer(), which is applied in main.c
+ * - glfw callbacks: replaced glfwGetWindowUserPointer() as the pointer now contains the App struct instead struct nk_glfw
+ *
+ * @see https://github.com/Immediate-Mode-UI/Nuklear/blob/master/demo/glfw_opengl3/nuklear_glfw_gl3.h
+ */
+
 /*
  * Nuklear - 1.32.0 - public domain
  * no warrenty implied; use at your own risk.
@@ -14,6 +22,9 @@
 #define NK_GLFW_GL3_H_
 
 #include <GLFW/glfw3.h>
+
+#include "app.h"
+#include "utils.h"
 
 enum nk_glfw_init_state{
     NK_GLFW3_DEFAULT=0,
@@ -56,7 +67,7 @@ struct nk_glfw {
     float delta_time_seconds_last;
 };
 
-NK_API struct nk_context*   nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state);
+NK_API struct nk_context*   nk_glfw3_init(App *app, enum nk_glfw_init_state);
 NK_API void                 nk_glfw3_shutdown(struct nk_glfw* glfw);
 NK_API void                 nk_glfw3_font_stash_begin(struct nk_glfw* glfw, struct nk_font_atlas **atlas);
 NK_API void                 nk_glfw3_font_stash_end(struct nk_glfw* glfw);
@@ -315,7 +326,8 @@ nk_glfw3_render(struct nk_glfw* glfw, enum nk_anti_aliasing AA, int max_vertex_b
 NK_API void
 nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
 {
-    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
+    App *app = (App*) glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = app->gui;
     if (glfw->text_len < NK_GLFW_TEXT_MAX)
         glfw->text[glfw->text_len++] = codepoint;
 }
@@ -323,7 +335,9 @@ nk_glfw3_char_callback(GLFWwindow *win, unsigned int codepoint)
 NK_API void
 nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 {
-    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
+    App *app = (App*) glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = app->gui;
+
     (void)xoff;
     glfw->scroll.x += (float)xoff;
     glfw->scroll.y += (float)yoff;
@@ -332,7 +346,9 @@ nk_gflw3_scroll_callback(GLFWwindow *win, double xoff, double yoff)
 NK_API void
 nk_glfw3_mouse_button_callback(GLFWwindow* win, int button, int action, int mods)
 {
-    struct nk_glfw* glfw = (struct nk_glfw *)glfwGetWindowUserPointer(win);
+    App *app = (App*) glfwGetWindowUserPointer(win);
+    struct nk_glfw* glfw = app->gui;
+
     double x, y;
     NK_UNUSED(mods);
     if (button != GLFW_MOUSE_BUTTON_LEFT) return;
@@ -371,9 +387,18 @@ nk_glfw3_clipboard_copy(nk_handle usr, const char *text, int len)
 }
 
 NK_API struct nk_context*
-nk_glfw3_init(struct nk_glfw* glfw, GLFWwindow *win, enum nk_glfw_init_state init_state)
+nk_glfw3_init(App *app, enum nk_glfw_init_state init_state)
 {
-    glfwSetWindowUserPointer(win, glfw);
+    EXIT_IF(app == NULL, "App has not been initialised");
+    EXIT_IF(app->window == NULL, "GLFWwindow has not been initialised");
+
+    struct nk_glfw* glfw = app->gui;
+    GLFWwindow *win = app->window;
+
+
+
+    // glfwSetWindowUserPointer(win, glfw); // disabled!
+
     glfw->win = win;
     if (init_state == NK_GLFW3_INSTALL_CALLBACKS) {
         glfwSetScrollCallback(win, nk_gflw3_scroll_callback);

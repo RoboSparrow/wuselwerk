@@ -6,15 +6,18 @@
 
 #define APP_STR_LEN 128
 
+#include <GLFW/glfw3.h>
+
 typedef struct App {
     char name[APP_STR_LEN];
     char version[APP_STR_LEN];
 
     size_t fps; // seconds
-    size_t debug;
+    int debug;
+    int paused;
 
-    char running;
-    char paused;
+    GLFWwindow* window;
+    struct nk_glfw *gui;
 } App;
 
 App *app_create(const char *name);

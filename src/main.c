@@ -79,8 +79,6 @@ static void configure(App *app, World *world, int argc, char **argv) {
 }
 
 int main (int argc, char **argv) {
-    GLFWwindow* window;
-    struct nk_glfw *gui;
 
     // world
 
@@ -94,19 +92,16 @@ int main (int argc, char **argv) {
 
     App *app = app_create("Test window");
     app->fps = 24; // cinematic film
-    app->debug = 1;
-    app->running = 1;
+    app->debug = 0;
     app->paused = 0;
 
     configure(app, world, argc, argv);
 
-    // glfw, glew
+    // glfw, glew, gui
+    ui_init(app, world);
+    gui_init(app);
 
-    window = ui_init(app, world);
-    //glfwSetWindowUserPointer (window, app);
-
-    // gui
-    gui = gui_init(window);
+    glfwSetWindowUserPointer (app->window, app);
 
     float ww = WORLD_WIDTH(world);
     float wh = WORLD_HEIGHT(world);
@@ -141,7 +136,7 @@ int main (int argc, char **argv) {
     double max = 1.0 / app->fps;
     then = glfwGetTime();
 
-    while (!glfwWindowShouldClose(window)) {
+    while (!glfwWindowShouldClose(app->window)) {
 
         now = glfwGetTime();
         if(now - then < max) {
@@ -167,20 +162,21 @@ int main (int argc, char **argv) {
             crt_draw_neighbours(world->population[i], neighbours, app, world);
         }
 
-        gui_draw(gui, app, world);
+        gui_draw(app, world);
 
         // render changes
         then = now;
 
         glEnd();
-        glfwSwapBuffers(window);
+        glfwSwapBuffers(app->window);
         glfwPollEvents();
 
     } // while
 
     qlist_destroy(neighbours);
     world_destroy(world);
-    ui_exit(window);
+    ui_exit(app->window);
+    gui_exit(app->gui);
     app_destroy(app);
 
   return 0;
