@@ -12,12 +12,18 @@ typedef struct App {
     char name[APP_STR_LEN];
     char version[APP_STR_LEN];
 
+    // game state
     size_t fps; // seconds
     int debug;
     int paused;
 
+    // ui
     GLFWwindow* window;
     struct nk_glfw *gui;
+
+    // ui state
+    int show_menu;
+    int show_crt_info;
 } App;
 
 App *app_create(const char *name);
