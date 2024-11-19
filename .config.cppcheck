@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="1">
+    <root name="."/>
+    <builddir>.cppcheck</builddir>
+    <check-headers>true</check-headers>
+    <check-unused-templates>false</check-unused-templates>
+    <analyze-all-vs-configs>true</analyze-all-vs-configs>
+    <includedir>
+        <dir name="src/"/>
+    </includedir>
+    <paths>
+        <dir name="src/"/>>
+    </paths>
+    <exclude>
+    </exclude>
+</project>
