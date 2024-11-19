@@ -57,7 +57,7 @@ static void _nk_canvas_end(struct nk_context *ctx, struct nk_canvas *canvas);
  */
 static void _gl_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
     App *app = (App*) glfwGetWindowUserPointer(window);
-
+    printf(" -- %d \n", key);
     if (action == GLFW_PRESS) {
         switch (key) {
             case GLFW_KEY_ESCAPE:
@@ -229,7 +229,7 @@ static void _draw_menu_toggle(App *app, struct nk_glfw *gui, struct nk_context *
     int w = 100;
     int h = 30;
 
-    nk_flags flags = 0; // declare settings once in App
+    nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
     nk_bool open = nk_begin(ctx, "Menu Toggle", nk_rect(0, gui->display_height - h, w, h), flags);
 
     if(!open) {

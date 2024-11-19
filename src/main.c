@@ -83,7 +83,7 @@ int main (int argc, char **argv) {
     // world
 
     World *world = world_create(
-        rand_range(2, 25),
+        rand_range(15, 200),
         (Vec2){0},
         (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT}
     );
@@ -101,6 +101,7 @@ int main (int argc, char **argv) {
     ui_init(app, world);
     gui_init(app);
 
+    // store up for callback updates
     glfwSetWindowUserPointer (app->window, app);
 
     float ww = WORLD_WIDTH(world);
@@ -120,11 +121,15 @@ int main (int argc, char **argv) {
         pos.y = rand_range_f(0, wh);
 
         crt = crt_birth(i, name, type, pos);
-        crt->agility = rand_range_f(0, 1.f);
+        crt->mass = rand_range_f(CRT_MIN_MASS, 5.f);
+        crt->size = crt->mass;
+        crt->agility = rand_range_f(.1, 2.f) * (1 / (crt->mass + crt->size)); // inverse proportional to mass (rand_range_f(.1, 2.f));
+
+        // printf(" -%d(%d): m: %f, s: %f, a: %f\n", crt->id, crt->type, crt->mass, crt->size, crt->agility);
+
         crt->perception = (ww > wh) ? wh / 10.f : ww / 10.f;
-        crt_random_targ(crt, world, 100.f); // TODO radius perception?
+        crt_random_targ(crt, world, 100.f);
         world->population[i] = crt;
-        // crt_print(stdout, crt); // dev
     }
 
     // main loop
@@ -146,26 +151,25 @@ int main (int argc, char **argv) {
         if (app->paused) {
             world_update(app, world);
             world_draw(app, world);
-            continue;
+        } else {
+            glClear(GL_COLOR_BUFFER_BIT);
+
+            world_update(app, world);
+            world_draw(app, world);
+
+            for (int i = 0; i < world->len; i++) {
+                crt_find_neighbours(world->population[i], app, world, neighbours);
+                crt_update(world->population[i], app, world, neighbours);
+
+                crt_draw(world->population[i], app, world);
+                crt_draw_neighbours(world->population[i], neighbours, app, world);
+            }
+
+            gui_draw(app, world);
+
+            // render changes
+            then = now;
         }
-
-        glClear(GL_COLOR_BUFFER_BIT);
-
-        world_update(app, world);
-        world_draw(app, world);
-
-        for (int i = 0; i < world->len; i++) {
-            crt_update(world->population[i], app, world);
-            crt_draw(world->population[i], app, world);
-
-            crt_find_neighbours(world->population[i], app, world, neighbours);
-            crt_draw_neighbours(world->population[i], neighbours, app, world);
-        }
-
-        gui_draw(app, world);
-
-        // render changes
-        then = now;
 
         glEnd();
         glfwSwapBuffers(app->window);

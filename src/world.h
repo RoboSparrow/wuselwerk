@@ -5,6 +5,7 @@
 #include "vec2.h"
 
 #define WORLD_POP_MAX 1000
+#define GRAVITY 0.01 // 0.000000000066742f // Gravitational constant
 
 // forward declarations
 

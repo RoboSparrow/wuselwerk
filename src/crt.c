@@ -43,6 +43,7 @@ Creature *crt_birth(int id, char *name, CrtType type, Vec2 pos) {
 
     crt->agility = CRT_MIN_AGILITY;
     crt->size = CRT_MIN_SIZE;
+    crt->mass = CRT_MIN_MASS;
 
     crt->perception = CRT_MIN_PERCEPTION;
 
@@ -71,13 +72,101 @@ int crt_random_targ(Creature *crt, World *world, float max_radius) {
     return 0;
 }
 
+static float _apply_attraction_rules(Creature *crt, Creature *other) {
+    switch (crt->type) {
+
+        case CRT_TYPE_HERBIVORE:
+
+            switch(other->type) {
+                case CRT_TYPE_CARNIVORE:
+                    return -.5f; // repel
+                case CRT_TYPE_HERBIVORE:
+                    return 1.5f; // attract
+            }
+
+        break;
+
+        case CRT_TYPE_CARNIVORE:
+
+            switch(other->type) {
+                case CRT_TYPE_CARNIVORE:
+                    return 0.f;
+                case CRT_TYPE_HERBIVORE:
+                    return 1.f; // neutral
+            }
+
+        break;
+
+    }
+
+    return 1.f; // neutral
+}
+
+
+static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList *neighbours) {
+    if (!neighbours->len) {
+        return 0;
+    }
+
+    Creature *other;
+    Vec2 delta, accl;
+    float dist, force, attraction, speed;
+    int dirx, diry;
+
+    size_t count = 0; // affected
+    for (size_t i = 0; i < neighbours->len; i++) {
+        other = (Creature*) neighbours->nodes[i]->data;
+        if (!other || other->id == crt->id) {
+            continue;
+        }
+
+        delta = vec2_sub(crt->pos, other->pos);
+        dist = vec2_mag(delta);
+        if (dist == 0 || dist >= crt->perception) {
+            continue;
+        }
+
+        // this is a variation of Newton's law of universal gravitation using attraction values instead of gravitation
+        attraction = _apply_attraction_rules(crt, other);
+        force = attraction * ((crt->mass * other->mass) / (dist * dist));
+        // force = GRAVITY * ((crt->mass * other->mass) / (dist * dist));
+
+        // bounds
+        dirx = (crt->pos.x < world->nw.x || crt->pos.x > world->se.x) ? 1 : -1;
+        diry = (crt->pos.y < world->nw.y || crt->pos.y > world->se.y) ? 1 : -1;
+
+        speed = crt->agility * 25.0; // TODO dynamic
+
+        accl = (Vec2) {
+            force * delta.x * speed * dirx,
+            force * delta.y * speed * diry,// TODO
+        };
+
+        // printf("%d(%d) -> %d(%d): force %f, attr: %f, accl { %f, %f }\n", crt->id, crt->type, other->id, other->type, force, attraction, accl.x, accl.y);
+        crt->pos.x += accl.x;
+        crt->pos.y += accl.y;
+
+        count++;
+    }
+
+    return count;
+}
+
 /**
  * Main loop: update
  */
-int crt_update(Creature *crt, App *app, World *world) {
+int crt_update(Creature *crt, App *app, World *world, QuadList *neighbours) {
     if (!crt || !app || !world) {
         return 1;
     }
+
+    // apply influenc eof neighbouring particles
+    int did = _crt_apply_neighbours(crt, app, world, neighbours);
+    if (did) {
+        return 0;
+    }
+
+    // move towards target
 
     // compute speed and progess linear
     float speed = crt->agility * 25.0; // TODO dynamic
@@ -117,6 +206,7 @@ void crt_print(FILE *fp, Creature *crt) {
         " status: %s,"
         " agility: %f,"
         " size: %f,"
+        " mass: %f,"
         " perception: %f,"
         " pos: {x:%f, y:%f},"
         " targ: {x:%f, y:%f}"
@@ -128,6 +218,7 @@ void crt_print(FILE *fp, Creature *crt) {
         crt->agility,
         crt->size,
         crt->perception,
+        crt->mass,
         crt->pos.x, crt->pos.y,
         crt->targ.x, crt->targ.y
     );
@@ -147,7 +238,7 @@ int crt_draw(Creature *crt, App *app, World *world) {
 
     switch (crt->type) {
         case CRT_TYPE_HERBIVORE:
-            glColor4f(0.0, 1.0, 0.0, 1.0);
+            glColor4f(1.0, 1.0, 0.0, 1.0);
             glPointSize(crt->size);
         break;
         case CRT_TYPE_CARNIVORE:

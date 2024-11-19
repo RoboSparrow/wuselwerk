@@ -9,6 +9,7 @@
 #define CRT_MIN_SIZE 10.f
 #define CRT_MIN_AGILITY 0
 #define CRT_MIN_PERCEPTION 0
+#define CRT_MIN_MASS 1.f
 
 #define CRT_MIN_DIST 5.f
 #define CRT_POS_NONE -1000.f
@@ -48,6 +49,7 @@ typedef struct Creature {
 
     float agility;
     float size;
+    float mass;
 
     float perception;
 
@@ -55,7 +57,7 @@ typedef struct Creature {
     Vec2 targ;
 } Creature;
 
-#define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
+#define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
 
 // Live Cycle
 
@@ -71,14 +73,15 @@ void crt_print(FILE *fp, Creature *crt);
 
 // Main loop
 
-int crt_update(Creature *crt, App *app, World *world);
+int crt_update(Creature *crt, App *app, World *world, QuadList *neighbours);
 int crt_draw(Creature *crt, App *app, World *world);
 
 ////
 // Relationships
 ////
 
-QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list) ;
+
+QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list);
 int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world);
 
 #endif
