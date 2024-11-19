@@ -11,7 +11,7 @@ void freez(void *ptr) {
 }
 
 void _seed() {
-    if(seed) {
+    if (seed) {
         return;
     }
     seed = time(NULL);
@@ -27,8 +27,8 @@ int rand_range(int min, int max) {
 }
 
 float rand_range_f(float min, float max) {
-    float scale = rand() / (float) RAND_MAX;
-    return min + scale * ( max - min );
+    float scale = rand() / (float)RAND_MAX;
+    return min + scale * (max - min);
 }
 
 void rand_str(char *dest, size_t len) {

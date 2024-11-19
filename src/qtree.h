@@ -58,7 +58,6 @@ typedef struct QuadTree {
     unsigned int length;
 } QuadTree;
 
-
 QuadTree *qtree_create(Vec2 window_nw, Vec2 window_se);
 void qtree_destroy(QuadTree *tree);
 
@@ -86,10 +85,10 @@ void qnode_print(FILE *fp, QuadNode *node);
 ////
 
 typedef struct QuadList {
-  size_t len;
-  size_t grow;
-  size_t max;
-  QuadNode **nodes;
+    size_t len;
+    size_t grow;
+    size_t max;
+    QuadNode **nodes;
 } QuadList;
 
 QuadList *qlist_create(size_t max);

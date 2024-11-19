@@ -16,7 +16,7 @@ static int _get_version(App *app) {
     }
 
     char *res = fgets(app->version, APP_STR_LEN, fp);
-    if(!res){
+    if (!res) {
         app->version[0] = 0;
         fclose(fp);
         return -1;

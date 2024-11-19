@@ -1,16 +1,16 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 #include <string.h>
 
 #include <GLFW/glfw3.h>
 
-#include "world.h"
 #include "app.h"
 #include "crt.h"
 #include "qtree.h" // toto remove
-#include "vec2.h"
 #include "utils.h"
+#include "vec2.h"
+#include "world.h"
 
 #define CRT_EVT_NONE = 0;
 #define CRT_EVT_TARG_REACHED = 1;
@@ -75,33 +75,31 @@ int crt_random_targ(Creature *crt, World *world, float max_radius) {
 static float _apply_attraction_rules(Creature *crt, Creature *other) {
     switch (crt->type) {
 
-        case CRT_TYPE_HERBIVORE:
+    case CRT_TYPE_HERBIVORE:
 
-            switch(other->type) {
-                case CRT_TYPE_CARNIVORE:
-                    return -.5f; // repel
-                case CRT_TYPE_HERBIVORE:
-                    return 1.5f; // attract
-            }
-
-        break;
-
+        switch (other->type) {
         case CRT_TYPE_CARNIVORE:
-
-            switch(other->type) {
-                case CRT_TYPE_CARNIVORE:
-                    return 0.f;
-                case CRT_TYPE_HERBIVORE:
-                    return 1.f; // neutral
-            }
+            return -.5f; // repel
+        case CRT_TYPE_HERBIVORE:
+            return 1.5f; // attract
+        }
 
         break;
 
+    case CRT_TYPE_CARNIVORE:
+
+        switch (other->type) {
+        case CRT_TYPE_CARNIVORE:
+            return 0.f;
+        case CRT_TYPE_HERBIVORE:
+            return 1.f; // neutral
+        }
+
+        break;
     }
 
     return 1.f; // neutral
 }
-
 
 static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList *neighbours) {
     if (!neighbours->len) {
@@ -115,7 +113,7 @@ static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList
 
     size_t count = 0; // affected
     for (size_t i = 0; i < neighbours->len; i++) {
-        other = (Creature*) neighbours->nodes[i]->data;
+        other = (Creature *)neighbours->nodes[i]->data;
         if (!other || other->id == crt->id) {
             continue;
         }
@@ -137,9 +135,9 @@ static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList
 
         speed = crt->agility * 25.0; // TODO dynamic
 
-        accl = (Vec2) {
+        accl = (Vec2){
             force * delta.x * speed * dirx,
-            force * delta.y * speed * diry,// TODO
+            force * delta.y * speed * diry, // TODO
         };
 
         // printf("%d(%d) -> %d(%d): force %f, attr: %f, accl { %f, %f }\n", crt->id, crt->type, other->id, other->type, force, attraction, accl.x, accl.y);
@@ -190,7 +188,7 @@ int crt_update(Creature *crt, App *app, World *world, QuadList *neighbours) {
  * Main loop: draw
  */
 void crt_print(FILE *fp, Creature *crt) {
-    if(!fp) {
+    if (!fp) {
         return;
     }
     if (!crt) {
@@ -199,29 +197,28 @@ void crt_print(FILE *fp, Creature *crt) {
     }
 
     fprintf(fp,
-        "{"
-        " id: %d,"
-        " name: \"%s\","
-        " type: %s,"
-        " status: %s,"
-        " agility: %f,"
-        " size: %f,"
-        " mass: %f,"
-        " perception: %f,"
-        " pos: {x:%f, y:%f},"
-        " targ: {x:%f, y:%f}"
-        " }\n",
-        crt->id,
-        crt->name,
-        CRT_TYPE_NAME(crt->type),
-        CRT_STATUS_NAME(crt->status),
-        crt->agility,
-        crt->size,
-        crt->perception,
-        crt->mass,
-        crt->pos.x, crt->pos.y,
-        crt->targ.x, crt->targ.y
-    );
+            "{"
+            " id: %d,"
+            " name: \"%s\","
+            " type: %s,"
+            " status: %s,"
+            " agility: %f,"
+            " size: %f,"
+            " mass: %f,"
+            " perception: %f,"
+            " pos: {x:%f, y:%f},"
+            " targ: {x:%f, y:%f}"
+            " }\n",
+            crt->id,
+            crt->name,
+            CRT_TYPE_NAME(crt->type),
+            CRT_STATUS_NAME(crt->status),
+            crt->agility,
+            crt->size,
+            crt->perception,
+            crt->mass,
+            crt->pos.x, crt->pos.y,
+            crt->targ.x, crt->targ.y);
 }
 
 int crt_draw(Creature *crt, App *app, World *world) {
@@ -237,17 +234,17 @@ int crt_draw(Creature *crt, App *app, World *world) {
     // 1. draw pos
 
     switch (crt->type) {
-        case CRT_TYPE_HERBIVORE:
-            glColor4f(1.0, 1.0, 0.0, 1.0);
-            glPointSize(crt->size);
+    case CRT_TYPE_HERBIVORE:
+        glColor4f(1.0, 1.0, 0.0, 1.0);
+        glPointSize(crt->size);
         break;
-        case CRT_TYPE_CARNIVORE:
-            glColor4f(0.0, 0.0, 1.0, 1.0);
-            glPointSize(crt->size);
+    case CRT_TYPE_CARNIVORE:
+        glColor4f(0.0, 0.0, 1.0, 1.0);
+        glPointSize(crt->size);
         break;
-        default:
-            glColor4f(1.0, 0.0, 0.0, 1.0);
-            glPointSize(crt->size);
+    default:
+        glColor4f(1.0, 0.0, 0.0, 1.0);
+        glPointSize(crt->size);
     }
 
     glBegin(GL_POINTS);
@@ -270,7 +267,7 @@ int crt_draw(Creature *crt, App *app, World *world) {
 
     // 3. draw targ
 
-    if(vec2_equals(crt->pos, crt->targ)) {
+    if (vec2_equals(crt->pos, crt->targ)) {
         return ret;
     }
 
@@ -344,9 +341,9 @@ int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world) {
     float ohz;
     for (size_t i = 0; i < list->len; i++) {
         if (list->nodes[i] && list->nodes[i]->data) {
-            other = (Creature*) list->nodes[i]->data;
+            other = (Creature *)list->nodes[i]->data;
             ohz = other->size / 2;
-            if(other->id != crt->id) {
+            if (other->id != crt->id) {
                 glBegin(GL_LINES);
                 glVertex2f(crt->pos.x - hsz, crt->pos.y - hsz);
                 glVertex2f(other->pos.x - ohz, other->pos.y - ohz);

@@ -1,6 +1,6 @@
+#include <math.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <math.h>
 
 #include <assert.h>
 
@@ -20,11 +20,7 @@ void qnode_print(FILE *fp, QuadNode *node);
  */
 static int _node_contains(QuadNode *node, Vec2 pos) {
     // printf(" -- nw: {%f, %f}, se: {%f, %f}, pos: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
-    return node != NULL
-        && pos.x >= node->self_nw.x
-        && pos.x < node->self_se.x
-        && pos.y >= node->self_nw.y
-        && pos.y < node->self_se.y;
+    return node != NULL && pos.x >= node->self_nw.x && pos.x < node->self_se.x && pos.y >= node->self_nw.y && pos.y < node->self_se.y;
 }
 
 /**
@@ -32,16 +28,16 @@ static int _node_contains(QuadNode *node, Vec2 pos) {
  */
 static QuadNode *_node_quadrant(QuadNode *node, Vec2 pos) {
     // printf("-- nw: {%f, %f}, se: {%f, %f}, pos: {%f, %f}\n", node->self_nw.x, node->self_nw.y, node->self_se.x, node->self_se.y, pos.x, pos.y);
-    if(_node_contains(node->nw, pos)) {
+    if (_node_contains(node->nw, pos)) {
         return node->nw;
     }
-    if(_node_contains(node->ne, pos)) {
+    if (_node_contains(node->ne, pos)) {
         return node->ne;
     }
-    if(_node_contains(node->sw, pos)) {
+    if (_node_contains(node->sw, pos)) {
         return node->sw;
     }
-    if(_node_contains(node->se, pos)) {
+    if (_node_contains(node->se, pos)) {
         return node->se;
     }
     return NULL;
@@ -51,10 +47,9 @@ static QuadNode *_node_quadrant(QuadNode *node, Vec2 pos) {
  * Clears data properites in a node
  */
 static void _node_clear_data(QuadNode *node) {
-    node->pos = (Vec2) {INFINITY, INFINITY};
+    node->pos = (Vec2){INFINITY, INFINITY};
     node->data = NULL;
 }
-
 
 /**
  * Inserts an entity into a tree node. The node might be split into four childs, or the  already existing entity in this node might be replaced
@@ -93,8 +88,8 @@ static int _node_insert(QuadTree *tree, QuadNode *node, void *data, Vec2 pos) {
     // 3. insert into one of THIS CHILDREN
     if (qnode_ispointer(node)) {
         QuadNode *child = _node_quadrant(node, pos);
-        if(!child) {
-             return QUAD_FAILED;
+        if (!child) {
+            return QUAD_FAILED;
         }
         return _node_insert(tree, child, data, pos);
     }
@@ -150,10 +145,10 @@ static int _node_split(QuadTree *tree, QuadNode *node) {
     float maxy = node->self_se.y;
 
     /*                         nw                     se              */
-    qnode_set_bounds(nw,  (Vec2) {minx, miny}, (Vec2) {ctrx, ctry});
-    qnode_set_bounds(ne,  (Vec2) {ctrx, miny}, (Vec2) {maxx, ctry});
-    qnode_set_bounds(se,  (Vec2) {ctrx, ctry}, (Vec2) {maxx, maxy});
-    qnode_set_bounds(sw,  (Vec2) {minx, ctry}, (Vec2) {ctrx, maxy});
+    qnode_set_bounds(nw, (Vec2){minx, miny}, (Vec2){ctrx, ctry});
+    qnode_set_bounds(ne, (Vec2){ctrx, miny}, (Vec2){maxx, ctry});
+    qnode_set_bounds(se, (Vec2){ctrx, ctry}, (Vec2){maxx, maxy});
+    qnode_set_bounds(sw, (Vec2){minx, ctry}, (Vec2){ctrx, maxy});
 
     node->nw = nw;
     node->ne = ne;
@@ -173,7 +168,7 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
         return NULL;
     }
 
-    if(qnode_isleaf(node)) {
+    if (qnode_isleaf(node)) {
         if (node->pos.x == pos.x && node->pos.y == pos.y) {
             return node;
         }
@@ -181,8 +176,8 @@ QuadNode *_node_find(QuadTree *tree, QuadNode *node, Vec2 pos) {
 
     if (qnode_ispointer(node)) {
         QuadNode *child = _node_quadrant(node, pos);
-        if(!child) {
-             return NULL;
+        if (!child) {
+            return NULL;
         }
         return _node_find(tree, child, pos);
     }
@@ -222,8 +217,8 @@ static void _node_find_in_area(QuadNode *node, Vec2 nw, Vec2 se, QuadList *list)
     }
 
     // this is a data node (and thus without children)
-    if(qnode_isleaf(node)) {
-        if (vec2_within(node->pos, nw, se)){
+    if (qnode_isleaf(node)) {
+        if (vec2_within(node->pos, nw, se)) {
             qlist_append(list, node);
         }
         return;
@@ -259,11 +254,11 @@ QuadNode *qnode_create(QuadNode *parent) {
     node->se = NULL;
     node->sw = NULL;
 
-    node->self_nw  = (Vec2){0};
-    node->self_se  = (Vec2){0};
+    node->self_nw = (Vec2){0};
+    node->self_se = (Vec2){0};
 
-    node->width  = 0;
-    node->height  = 0;
+    node->width = 0;
+    node->height = 0;
 
     _node_clear_data(node);
     return node;
@@ -298,47 +293,31 @@ int qnode_isleaf(QuadNode *node) {
 
 // TODO rename
 int qnode_ispointer(QuadNode *node) {
-  return node->nw != NULL
-      && node->ne != NULL
-      && node->sw != NULL
-      && node->se != NULL
-      && !qnode_isleaf(node);
+    return node->nw != NULL && node->ne != NULL && node->sw != NULL && node->se != NULL && !qnode_isleaf(node);
 }
 
 int qnode_isempty(QuadNode *node) {
-  return node->nw == NULL
-      && node->ne == NULL
-      && node->sw == NULL
-      && node->se == NULL
-      && !qnode_isleaf(node);
+    return node->nw == NULL && node->ne == NULL && node->sw == NULL && node->se == NULL && !qnode_isleaf(node);
 }
 
 /**
  * checks if the area of a qnode is fully enclosed by a given area
  */
 int qnode_within_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x >= nw.x
-        && node->self_se.x <= se.x
-        && node->self_nw.y >= nw.y
-        && node->self_se.y <= se.y;
+    return node != NULL && node->self_nw.x >= nw.x && node->self_se.x <= se.x && node->self_nw.y >= nw.y && node->self_se.y <= se.y;
 }
 
 /**
  * checks if the area of a qnode is fully overlaps a given area
  */
 int qnode_overlaps_area(QuadNode *node, Vec2 nw, Vec2 se) {
-    return node != NULL
-        && node->self_nw.x < se.x
-        && node->self_se.x >= nw.x
-        && node->self_nw.y < se.y
-        && node->self_se.y >= nw.y;
+    return node != NULL && node->self_nw.x < se.x && node->self_se.x >= nw.x && node->self_nw.y < se.y && node->self_se.y >= nw.y;
 }
 
 void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
     node->self_nw = nw;
     node->self_se = se;
-    node->width  = fabs(nw.x - se.x);
+    node->width = fabs(nw.x - se.x);
     node->height = fabs(nw.y - se.y);
 }
 
@@ -346,22 +325,22 @@ void qnode_set_bounds(QuadNode *node, Vec2 nw, Vec2 se) {
  * recusively walk trough a quad node's children and apply on before (recusing) and on after call backs
  */
 void qnode_walk(QuadNode *node, void (*descent)(QuadNode *node), void (*ascent)(QuadNode *node)) {
-  (*descent)(node);
+    (*descent)(node);
 
-  if(node->nw != NULL) {
-      qnode_walk(node->nw, descent, ascent);
-  }
-  if(node->ne != NULL) {
-      qnode_walk(node->ne, descent, ascent);
-  }
-  if(node->sw != NULL) {
-      qnode_walk(node->sw, descent, ascent);
-  }
-  if(node->se != NULL) {
-      qnode_walk(node->se, descent, ascent);
-  }
+    if (node->nw != NULL) {
+        qnode_walk(node->nw, descent, ascent);
+    }
+    if (node->ne != NULL) {
+        qnode_walk(node->ne, descent, ascent);
+    }
+    if (node->sw != NULL) {
+        qnode_walk(node->sw, descent, ascent);
+    }
+    if (node->se != NULL) {
+        qnode_walk(node->se, descent, ascent);
+    }
 
-  (*ascent)(node);
+    (*ascent)(node);
 }
 
 ////
@@ -402,7 +381,7 @@ int qtree_insert(QuadTree *tree, void *data, Vec2 pos) {
     }
 
     // check if pos is in tree bounds
-    if(!_node_contains(tree->root, pos)) {
+    if (!_node_contains(tree->root, pos)) {
         return QUAD_FAILED;
     }
 
@@ -426,8 +405,8 @@ QuadList *qtree_find_in_area(QuadTree *tree, Vec2 pos, float radius, QuadList *l
         return NULL;
     }
 
-    Vec2 nw = { pos.x - radius, pos.y - radius };
-    Vec2 se = { pos.x + radius, pos.y + radius };
+    Vec2 nw = {pos.x - radius, pos.y - radius};
+    Vec2 se = {pos.x + radius, pos.y + radius};
     _node_find_in_area(tree->root, nw, se, list);
 
     return list;
@@ -482,7 +461,6 @@ void qnode_print(FILE *fp, QuadNode *node) {
     }
 }
 
-
 ////
 // QuadList
 ////
@@ -497,7 +475,7 @@ QuadList *qlist_create(size_t max) {
     list->grow = max;
     list->max = max;
 
-    list->nodes = calloc(sizeof(QuadNode*), max);
+    list->nodes = calloc(sizeof(QuadNode *), max);
     if (!list->nodes) {
         freez(list);
         return NULL;
@@ -512,7 +490,7 @@ QuadList *qlist_append(QuadList *list, QuadNode *node) {
 
     if (list->len >= list->max) {
         list->max += list->grow;
-        list->nodes = realloc(list->nodes, list->max * sizeof(QuadNode*));
+        list->nodes = realloc(list->nodes, list->max * sizeof(QuadNode *));
         if (!list->nodes) {
             freez(list);
             return NULL;
@@ -543,7 +521,7 @@ void qlist_destroy(QuadList *list) {
 }
 
 void qlist_print(FILE *fp, QuadList *list) {
-    if(!fp) {
+    if (!fp) {
         return;
     }
     if (!list) {
@@ -559,14 +537,13 @@ void qlist_print(FILE *fp, QuadList *list) {
         "  nodes: [",
         list->len,
         list->max,
-        list->grow
-    );
+        list->grow);
     if (list->nodes) {
-        for(size_t i = 0; i < list->len; i++) {
+        for (size_t i = 0; i < list->len; i++) {
             if (list->nodes[i]) {
                 printf("{pos:{%f, %f}}", list->nodes[i]->pos.x, list->nodes[i]->pos.y);
             }
-            printf("%s", (i < list->len -1) ? ", " : "");
+            printf("%s", (i < list->len - 1) ? ", " : "");
         }
     }
     printf("]\n}\n");

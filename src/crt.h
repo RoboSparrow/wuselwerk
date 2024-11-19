@@ -2,9 +2,9 @@
 #define __CRT_H__
 
 #include "app.h"
-#include "world.h"
 #include "qtree.h"
 #include "vec2.h"
+#include "world.h"
 
 #define CRT_MIN_SIZE 10.f
 #define CRT_MIN_AGILITY 0
@@ -29,7 +29,7 @@ typedef enum CrtType {
     CRT_TYPE_MAX
 } CrtType;
 extern const char crt_type_names[][32];
-#define CRT_TYPE_NAME(t) ((t >= 0 && t < CRT_TYPE_MAX ) ? crt_type_names[t] : "<UNDEFINED>" )
+#define CRT_TYPE_NAME(t) ((t >= 0 && t < CRT_TYPE_MAX) ? crt_type_names[t] : "<UNDEFINED>")
 
 typedef enum CrtStatus {
     CRT_STATUS_NONE,
@@ -38,7 +38,7 @@ typedef enum CrtStatus {
     CRT_STATUS_MAX
 } CrtStatus;
 extern const char crt_status_names[][32];
-#define CRT_STATUS_NAME(s) ((s >= 0 && s < CRT_STATUS_MAX ) ? crt_status_names[s] : "<UNDEFINED>" )
+#define CRT_STATUS_NAME(s) ((s >= 0 && s < CRT_STATUS_MAX) ? crt_status_names[s] : "<UNDEFINED>")
 
 typedef struct Creature {
     unsigned int id;
@@ -57,7 +57,10 @@ typedef struct Creature {
     Vec2 targ;
 } Creature;
 
-#define CRT_INIT(id) {id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, {CRT_POS_NONE, CRT_POS_NONE}}
+#define CRT_INIT(id)                                                                                                      \
+    {                                                                                                                     \
+        id, {0}, CRT_TYPE_NONE, CRT_STATUS_NONE, 0, 0, 0, 0, {CRT_POS_NONE, CRT_POS_NONE}, { CRT_POS_NONE, CRT_POS_NONE } \
+    }
 
 // Live Cycle
 
@@ -79,7 +82,6 @@ int crt_draw(Creature *crt, App *app, World *world);
 ////
 // Relationships
 ////
-
 
 QuadList *crt_find_neighbours(Creature *crt, App *app, World *world, QuadList *list);
 int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world);

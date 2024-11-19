@@ -18,7 +18,7 @@ typedef struct App {
     int paused;
 
     // ui
-    GLFWwindow* window;
+    GLFWwindow *window;
     struct nk_glfw *gui;
 
     // ui state

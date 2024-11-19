@@ -4,11 +4,11 @@
 #include <GLFW/glfw3.h>
 
 #include "app.h"
-#include "world.h"
-#include "qtree.h"
 #include "crt.h"
+#include "qtree.h"
 #include "ui.h"
 #include "utils.h"
+#include "world.h"
 
 World *world_create(size_t len, Vec2 nw, Vec2 se) {
     World *world = calloc(sizeof(World), 1);
@@ -27,7 +27,7 @@ World *world_create(size_t len, Vec2 nw, Vec2 se) {
 }
 
 void world_print(FILE *fp, World *world) {
-    if(!fp) {
+    if (!fp) {
         return;
     }
 
@@ -37,14 +37,13 @@ void world_print(FILE *fp, World *world) {
     Creature *crt;
 
     fprintf(fp,
-        "{\n"
-        "  nw: {%.2f, %.2f},\n"
-        "  se: {%.2f, %.2f},\n"
-        "  len: %ld,\n",
-        world->nw.x, world->nw.y,
-        world->se.x, world->se.y,
-        world->len
-    );
+            "{\n"
+            "  nw: {%.2f, %.2f},\n"
+            "  se: {%.2f, %.2f},\n"
+            "  len: %ld,\n",
+            world->nw.x, world->nw.y,
+            world->se.x, world->se.y,
+            world->len);
 
     fprintf(fp, "  population: [");
     for (int i = 0; i < world->len; i++) {
@@ -111,7 +110,7 @@ int world_update(App *app, World *world) {
 }
 
 static void _draw_qtree_asc(QuadNode *node) {
-    if(!node) {
+    if (!node) {
         return;
     }
 
@@ -127,9 +126,8 @@ static void _draw_qtree_asc(QuadNode *node) {
     //  bottom
     glBegin(GL_LINES);
     glVertex2f(node->self_nw.x, node->self_se.y);
-    glVertex2f( node->self_se.x, node->self_se.y);
+    glVertex2f(node->self_se.x, node->self_se.y);
     glEnd();
-
 }
 static void _draw_qtree_desc(QuadNode *node) {}
 

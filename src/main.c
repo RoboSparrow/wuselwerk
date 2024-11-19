@@ -13,11 +13,11 @@
 #include "app.h"
 #include "ui.h"
 
-#include "world.h"
 #include "crt.h"
+#include "world.h"
 
-#include "vec2.h"
 #include "utils.h"
+#include "vec2.h"
 
 #define DEFAULT_WIDTH 800
 #define DEFAULT_HEIGHT 600
@@ -38,55 +38,54 @@ static void configure(App *app, World *world, int argc, char **argv) {
 
     char usage[] = "usage: %s [-h] [-c creatures:number] [-P paused]\n";
     while ((opt = getopt(argc, argv, "f:c:Ph")) != -1) {
-        switch (opt)  {
-            case 'c':
-                ival = atoi(optarg);
-                if (!ival || ival < 0) {
-                    fprintf(stderr, "invalid '%c' option value\n", opt);
-                    exit(1);
-                }
-                if (ival > WORLD_POP_MAX) {
-                    fprintf(stderr, "invalid '%c' option value: pop > max (%d > %d)\n", opt, ival, WORLD_POP_MAX);
-                    exit(1);
-                }
-                world->len = ival;
+        switch (opt) {
+        case 'c':
+            ival = atoi(optarg);
+            if (!ival || ival < 0) {
+                fprintf(stderr, "invalid '%c' option value\n", opt);
+                exit(1);
+            }
+            if (ival > WORLD_POP_MAX) {
+                fprintf(stderr, "invalid '%c' option value: pop > max (%d > %d)\n", opt, ival, WORLD_POP_MAX);
+                exit(1);
+            }
+            world->len = ival;
             break;
 
-            case 'f':
-                ival = atoi(optarg);
-                if (!ival || ival < 0) {
-                    fprintf(stderr, "invalid 'f' option value\n");
-                    exit(1);
-                }
-                if (ival > APP_MAX_FPS) {
-                    fprintf(stderr, "invalid '%c' option value: fps > max (%d > %d)\n", opt, ival, APP_MAX_FPS);
-                    exit(1);
-                }
-                app->fps = ival;
+        case 'f':
+            ival = atoi(optarg);
+            if (!ival || ival < 0) {
+                fprintf(stderr, "invalid 'f' option value\n");
+                exit(1);
+            }
+            if (ival > APP_MAX_FPS) {
+                fprintf(stderr, "invalid '%c' option value: fps > max (%d > %d)\n", opt, ival, APP_MAX_FPS);
+                exit(1);
+            }
+            app->fps = ival;
             break;
 
-            case 'P':
-                app->paused = 1;
+        case 'P':
+            app->paused = 1;
             break;
 
-            case 'h':
-            case '?':
-                fprintf(stderr, usage, argv[0]);
-                exit(0);
+        case 'h':
+        case '?':
+            fprintf(stderr, usage, argv[0]);
+            exit(0);
             break;
         }
     }
 }
 
-int main (int argc, char **argv) {
+int main(int argc, char **argv) {
 
     // world
 
     World *world = world_create(
         rand_range(15, 200),
         (Vec2){0},
-        (Vec2) {DEFAULT_WIDTH, DEFAULT_HEIGHT}
-    );
+        (Vec2){DEFAULT_WIDTH, DEFAULT_HEIGHT});
 
     // app
 
@@ -102,7 +101,7 @@ int main (int argc, char **argv) {
     gui_init(app);
 
     // store up for callback updates
-    glfwSetWindowUserPointer (app->window, app);
+    glfwSetWindowUserPointer(app->window, app);
 
     float ww = WORLD_WIDTH(world);
     float wh = WORLD_HEIGHT(world);
@@ -144,7 +143,7 @@ int main (int argc, char **argv) {
     while (!glfwWindowShouldClose(app->window)) {
 
         now = glfwGetTime();
-        if(now - then < max) {
+        if (now - then < max) {
             continue;
         }
 
@@ -183,5 +182,5 @@ int main (int argc, char **argv) {
     gui_exit(app->gui);
     app_destroy(app);
 
-  return 0;
+    return 0;
 }

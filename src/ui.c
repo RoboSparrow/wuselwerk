@@ -18,13 +18,11 @@
 #include "external/nuklear.h"
 #include "nk_glfw3.h"
 
-
 #include "app.h"
-#include "world.h"
-#include "utils.h"
 #include "crt.h"
 #include "ui.h"
-
+#include "utils.h"
+#include "world.h"
 
 #define MAX_VERTEX_BUFFER 512 * 1024
 #define MAX_ELEMENT_BUFFER 128 * 1024
@@ -44,48 +42,46 @@ struct nk_canvas {
 static void _nk_canvas_begin(
     const char *name,
     struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
-    int x, int y, int width, int height, struct nk_color background_color
-);
+    int x, int y, int width, int height, struct nk_color background_color);
 
 static void _nk_canvas_end(struct nk_context *ctx, struct nk_canvas *canvas);
-
 
 /**
  * key input callback
  * @see https://www.glfw.org/docs/latest/input_guide.html#input_key
  * @see https://www.glfw.org/docs/latest/group__keys.html
  */
-static void _gl_key_callback(GLFWwindow* window, int key, int scancode, int action, int mods) {
-    App *app = (App*) glfwGetWindowUserPointer(window);
-    printf(" -- %d \n", key);
+static void _gl_key_callback(GLFWwindow *window, int key, int scancode, int action, int mods) {
+    App *app = (App *)glfwGetWindowUserPointer(window);
+
     if (action == GLFW_PRESS) {
         switch (key) {
-            case GLFW_KEY_ESCAPE:
-            case GLFW_KEY_Q:
-                LOG_INFO("Closing app");
-                glfwSetWindowShouldClose(window, GL_TRUE);
+        case GLFW_KEY_ESCAPE:
+        case GLFW_KEY_Q:
+            LOG_INFO("Closing app");
+            glfwSetWindowShouldClose(window, GL_TRUE);
             break;
-            case GLFW_KEY_D:
-                LOG_INFO("toggling debug mode");
-                if (app) {
-                    app->debug = !app->debug;
-                }
+        case GLFW_KEY_D:
+            LOG_INFO("toggling debug mode");
+            if (app) {
+                app->debug = !app->debug;
+            }
             break;
-            case GLFW_KEY_SPACE :
-                LOG_INFO("toggling pause");
-                if (app) {
-                    app->paused = !app->paused;
-                }
+        case GLFW_KEY_SPACE:
+            LOG_INFO("toggling pause");
+            if (app) {
+                app->paused = !app->paused;
+            }
             break;
         }
     }
 }
 
-static void _gl_error_callback(int err, const char* msg) {
+static void _gl_error_callback(int err, const char *msg) {
     LOG_ERROR_F("error %d: %s", err, msg);
 }
 
-void _gl_resize_callback(GLFWwindow* window, int width, int height) {
+void _gl_resize_callback(GLFWwindow *window, int width, int height) {
     glViewport(0, 0, width, height);
 }
 
@@ -99,11 +95,10 @@ void ui_init(App *app, World *world) {
     EXIT_IF(res == 0, "GFLW failed to initialise.");
 
     GLFWwindow *window = glfwCreateWindow(
-        (int) WORLD_WIDTH(world),
-        (int) WORLD_HEIGHT(world),
-         app->name,
-         NULL, NULL
-    );
+        (int)WORLD_WIDTH(world),
+        (int)WORLD_HEIGHT(world),
+        app->name,
+        NULL, NULL);
     if (!window) {
         glfwTerminate();
         LOG_ERROR("GLFW window failed to initialise");
@@ -156,12 +151,12 @@ void gui_init(App *app) {
     }
 
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(255, 255, 255, 25)); // = nk_style_item_hide();
-    ctx->style.window.border_color = nk_rgba(0,0,0,255);
+    ctx->style.window.border_color = nk_rgba(0, 0, 0, 255);
     ctx->style.checkbox.active = nk_style_item_color(nk_rgb(255, 0, 0));
 }
 
 void gui_exit(struct nk_glfw *gui) {
-    if(!gui) {
+    if (!gui) {
         return;
     }
     nk_glfw3_shutdown(gui);
@@ -169,7 +164,7 @@ void gui_exit(struct nk_glfw *gui) {
 }
 
 int gui_draw(App *app, World *world) {
-    if(!app || !world || !app->gui) {
+    if (!app || !world || !app->gui) {
         LOG_ERROR("missing app, world or gui");
         return -1;
     }
@@ -202,10 +197,10 @@ static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx) {
     char msg[256];
 
     // TODO
-    nk_flags flags = NK_WINDOW_BORDER|NK_WINDOW_MOVABLE|NK_WINDOW_SCALABLE|NK_WINDOW_MINIMIZABLE|NK_WINDOW_TITLE; // declare settings once in App
+    nk_flags flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE; // declare settings once in App
     nk_bool open = nk_begin(ctx, "Menu", nk_rect((gui->display_width - w) / 2, (gui->display_height - h) / 2, w, h), flags);
 
-    if(!open) {
+    if (!open) {
         // not an error, window could be collapsed
         nk_end(ctx);
         return;
@@ -232,7 +227,7 @@ static void _draw_menu_toggle(App *app, struct nk_glfw *gui, struct nk_context *
     nk_flags flags = NK_WINDOW_NO_SCROLLBAR;
     nk_bool open = nk_begin(ctx, "Menu Toggle", nk_rect(0, gui->display_height - h, w, h), flags);
 
-    if(!open) {
+    if (!open) {
         return;
     }
 
@@ -246,56 +241,54 @@ static void _draw_menu_toggle(App *app, struct nk_glfw *gui, struct nk_context *
 }
 
 static void _draw_crt_info(App *app, struct nk_glfw *gui, struct nk_context *ctx, World *world) {
-        if (world->len <= 0) {
-            return;
+    if (world->len <= 0) {
+        return;
+    }
+
+    struct nk_canvas canvas;
+    struct nk_font *font = gui->atlas.default_font;
+    struct nk_color bg = nk_rgba(255, 0, 0, 0);
+    struct nk_color fg = nk_rgba(255, 255, 255, 255);
+    struct nk_rect rect = nk_rect(0, 0, 150, 20);
+
+    char msg[128];
+
+    _nk_canvas_begin("crt info", ctx, &canvas, NK_WINDOW_BACKGROUND, 0, 0, gui->display_width, gui->display_height, bg);
+
+    for (size_t i = 0; i < world->len; i++) {
+        if (!world->population[i]) {
+            continue;
         }
 
-        struct nk_canvas canvas;
-        struct nk_font *font = gui->atlas.default_font;
-        struct nk_color bg = nk_rgba(255, 0, 0, 0);
-        struct nk_color fg = nk_rgba(255, 255, 255, 255);
-        struct nk_rect rect = nk_rect(0, 0, 150, 20);
+        rect = nk_rect(
+            world->population[i]->pos.x - (world->population[i]->size / 2),
+            world->population[i]->pos.y - (world->population[i]->size / 2) - 25,
+            50, 20);
+        snprintf(msg, 128, "%d", world->population[i]->id);
+        nk_draw_text(canvas.painter, rect, msg, strlen(msg), &font->handle, bg, fg);
+    }
 
-        char msg[128];
-
-        _nk_canvas_begin("crt info", ctx, &canvas, NK_WINDOW_BACKGROUND, 0, 0, gui->display_width, gui->display_height, bg);
-
-        for (size_t i = 0; i < world->len; i++) {
-            if (!world->population[i]) {
-                continue;
-            }
-
-            rect = nk_rect(
-                world->population[i]->pos.x - (world->population[i]->size/2),
-                world->population[i]->pos.y - (world->population[i]->size/2) - 25,
-                50, 20
-            );
-            snprintf(msg, 128, "%d", world->population[i]->id);
-            nk_draw_text(canvas.painter, rect, msg, strlen(msg), &font->handle, bg, fg);
-        }
-
-        _nk_canvas_end(ctx, &canvas);
+    _nk_canvas_end(ctx, &canvas);
 }
 
 static void _nk_canvas_begin(
     const char *name,
     struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
-    int x, int y, int width, int height, struct nk_color background_color
-) {
+    int x, int y, int width, int height, struct nk_color background_color) {
     /* save style properties which will be overwritten */
     canvas->panel_padding = ctx->style.window.padding;
     canvas->item_spacing = ctx->style.window.spacing;
     canvas->window_background = ctx->style.window.fixed_background;
 
     /* use the complete window space and set background */
-    ctx->style.window.spacing = nk_vec2(0,0);
-    ctx->style.window.padding = nk_vec2(0,0);
+    ctx->style.window.spacing = nk_vec2(0, 0);
+    ctx->style.window.padding = nk_vec2(0, 0);
     ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
     /* create/update window and set position + size */
     flags = flags & ~NK_WINDOW_DYNAMIC;
     nk_window_set_bounds(ctx, name, nk_rect(x, y, width, height));
-    nk_begin(ctx, name, nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR|flags);
+    nk_begin(ctx, name, nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR | flags);
 
     /* allocate the complete window space for drawing */
     {
@@ -306,7 +299,6 @@ static void _nk_canvas_begin(
         canvas->painter = nk_window_get_canvas(ctx);
     }
 }
-
 
 static void _nk_canvas_end(struct nk_context *ctx, struct nk_canvas *canvas) {
     nk_end(ctx);

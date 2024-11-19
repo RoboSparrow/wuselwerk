@@ -12,7 +12,7 @@ typedef struct Vec2 {
     float y;
 } Vec2;
 
-#define VEC2_PRINT(fp,v) fprintf(fp, "{x:%.2f, y:%.2f}", v.x, v.y)
+#define VEC2_PRINT(fp, v) fprintf(fp, "{x:%.2f, y:%.2f}", v.x, v.y)
 
 // core
 
@@ -41,7 +41,7 @@ typedef struct PVec2 {
     float phi;
 } PVec2;
 
-#define PVEC2_PRINT(fp,v) fprintf(fp, "{r:%f, phi:%f}", v.r, v.phi)
+#define PVEC2_PRINT(fp, v) fprintf(fp, "{r:%f, phi:%f}", v.r, v.phi)
 
 /**
  * conversions

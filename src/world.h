@@ -13,14 +13,14 @@ typedef struct Creature Creature;
 typedef struct QuadTree QuadTree;
 
 typedef struct World {
-    Vec2 nw;   // north-west corner of the world (min)
-    Vec2 se;   // south-east corner of the world (max)
+    Vec2 nw; // north-west corner of the world (min)
+    Vec2 se; // south-east corner of the world (max)
     size_t len;
     Creature *population[WORLD_POP_MAX];
     QuadTree *qtree;
 } World;
 
-#define WORLD_WIDTH(w)  fabs(w->se.x - w->nw.x)
+#define WORLD_WIDTH(w) fabs(w->se.x - w->nw.x)
 #define WORLD_HEIGHT(w) fabs(w->se.y - w->nw.y)
 
 // Live cycle
