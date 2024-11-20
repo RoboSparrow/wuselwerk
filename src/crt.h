@@ -14,9 +14,11 @@
 #define CRT_MIN_DIST 5.f
 #define CRT_POS_NONE -1000.f
 
-#define CRT_NAME_LEN 16
+#define CRT_NAME_LEN 32
 
-typedef struct QuadList QuadList; // forward decl, TODO remove, after circlular includes is resolved
+extern const char crt_type_names[][CRT_NAME_LEN];
+extern const char crt_status_names[][CRT_NAME_LEN];
+
 
 ////
 // Crt

@@ -28,7 +28,7 @@
 #define MAX_ELEMENT_BUFFER 128 * 1024
 
 static void _draw_menu_toggle(App *app, struct nk_glfw *gui, struct nk_context *ctx);
-static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx);
+static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx, World *world);
 static void _draw_crt_info(App *app, struct nk_glfw *gui, struct nk_context *ctx, World *world);
 
 // TODO mv to nk_glfw3.h
@@ -182,7 +182,7 @@ int gui_draw(App *app, World *world) {
 
     _draw_menu_toggle(app, gui, ctx);
     if (app->show_menu) {
-        _draw_menu(app, gui, ctx);
+        _draw_menu(app, gui, ctx, world);
     }
 
     nk_glfw3_render(app->gui, NK_ANTI_ALIASING_ON, MAX_VERTEX_BUFFER, MAX_ELEMENT_BUFFER);
@@ -190,11 +190,13 @@ int gui_draw(App *app, World *world) {
     return ret;
 }
 
-static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx) {
+static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx, World *world) {
     // params tested before
-    int w = 250;
+    int w = 550;
     int h = 250;
     char msg[256];
+    char sval[16];
+    Rule *rule;
 
     // TODO
     nk_flags flags = NK_WINDOW_BORDER | NK_WINDOW_MOVABLE | NK_WINDOW_SCALABLE | NK_WINDOW_MINIMIZABLE | NK_WINDOW_TITLE; // declare settings once in App
@@ -216,6 +218,16 @@ static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx) {
     snprintf(msg, 256, "version: %s", app->version);
     nk_label(ctx, msg, NK_TEXT_LEFT);
 
+    if (world->rules) {
+        for (size_t i = 0; i < world->rules->len; i++) {
+            rule = world->rules->rules[i];
+            if (rule) {
+                snprintf(msg, 256, "%s -> %s: %f", crt_type_names[rule->left], crt_type_names[rule->right], rule->val);
+                nk_label(ctx, msg, NK_TEXT_LEFT);
+                nk_slider_float(ctx, -10.0f, &rule->val, 10.0f, 0.1f);
+            }
+        }
+    }
     nk_end(ctx);
 }
 

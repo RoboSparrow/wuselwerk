@@ -16,8 +16,8 @@
 #define CRT_EVT_TARG_REACHED = 1;
 #define CRT_EVT_BOUNDS_REACHED = 2;
 
-const char crt_type_names[][32] = {"CRT_TYPE_NONE", "CRT_TYPE_HERBIVORE", "CRT_TYPE_CARNIVORE"};
-const char crt_status_names[][32] = {"CRT_STATUS_NONE", "CRT_STATUS_DEAD", "CRT_STATUS_ALIVE"};
+const char crt_type_names[][CRT_NAME_LEN] = {"CRT_TYPE_NONE", "CRT_TYPE_HERBIVORE", "CRT_TYPE_CARNIVORE"};
+const char crt_status_names[][CRT_NAME_LEN] = {"CRT_STATUS_NONE", "CRT_STATUS_DEAD", "CRT_STATUS_ALIVE"};
 
 ////
 // Crt
@@ -72,35 +72,6 @@ int crt_random_targ(Creature *crt, World *world, float max_radius) {
     return 0;
 }
 
-static float _apply_attraction_rules(Creature *crt, Creature *other) {
-    switch (crt->type) {
-
-    case CRT_TYPE_HERBIVORE:
-
-        switch (other->type) {
-        case CRT_TYPE_CARNIVORE:
-            return -.5f; // repel
-        case CRT_TYPE_HERBIVORE:
-            return 1.5f; // attract
-        }
-
-        break;
-
-    case CRT_TYPE_CARNIVORE:
-
-        switch (other->type) {
-        case CRT_TYPE_CARNIVORE:
-            return 0.f;
-        case CRT_TYPE_HERBIVORE:
-            return 1.f; // neutral
-        }
-
-        break;
-    }
-
-    return 1.f; // neutral
-}
-
 static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList *neighbours) {
     if (!neighbours->len) {
         return 0;
@@ -109,6 +80,7 @@ static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList
     Creature *other;
     Vec2 delta, accl;
     float dist, force, attraction, speed;
+    Rule *attr_rule;
     int dirx, diry;
 
     size_t count = 0; // affected
@@ -125,7 +97,9 @@ static int _crt_apply_neighbours(Creature *crt, App *app, World *world, QuadList
         }
 
         // this is a variation of Newton's law of universal gravitation using attraction values instead of gravitation
-        attraction = _apply_attraction_rules(crt, other);
+        attr_rule = rules_get(world->rules, crt->type, other->type);
+        attraction =  (attr_rule) ? attr_rule->val : 1.0f;
+
         force = attraction * ((crt->mass * other->mass) / (dist * dist));
         // force = GRAVITY * ((crt->mass * other->mass) / (dist * dist));
 

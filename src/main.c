@@ -87,6 +87,13 @@ int main(int argc, char **argv) {
         (Vec2){0},
         (Vec2){DEFAULT_WIDTH, DEFAULT_HEIGHT});
 
+    // rules
+
+    rules_set(world->rules, CRT_TYPE_HERBIVORE, CRT_TYPE_CARNIVORE, -0.5f); // repel
+    rules_set(world->rules, CRT_TYPE_HERBIVORE, CRT_TYPE_HERBIVORE, 1.5f); // attract
+    rules_set(world->rules, CRT_TYPE_CARNIVORE, CRT_TYPE_HERBIVORE, 1.5f); // attract (hunt)
+    rules_set(world->rules, CRT_TYPE_CARNIVORE, CRT_TYPE_CARNIVORE, 1.0f); // neutral
+
     // app
 
     App *app = app_create("Test window");

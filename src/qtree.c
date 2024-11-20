@@ -468,6 +468,7 @@ void qnode_print(FILE *fp, QuadNode *node) {
 QuadList *qlist_create(size_t max) {
     QuadList *list = malloc(sizeof(QuadList));
     if (!list) {
+        LOG_ERROR("error allocating memory for quadlist");
         return NULL;
     }
 
@@ -477,6 +478,7 @@ QuadList *qlist_create(size_t max) {
 
     list->nodes = calloc(sizeof(QuadNode *), max);
     if (!list->nodes) {
+        LOG_ERROR("error re-allocating memory for quadlist nodes");
         freez(list);
         return NULL;
     }
@@ -492,6 +494,7 @@ QuadList *qlist_append(QuadList *list, QuadNode *node) {
         list->max += list->grow;
         list->nodes = realloc(list->nodes, list->max * sizeof(QuadNode *));
         if (!list->nodes) {
+            LOG_ERROR("error re-allocating memory for quadlist nodes");
             freez(list);
             return NULL;
         }
