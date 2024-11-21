@@ -152,7 +152,6 @@ void gui_init(App *app) {
 
     ctx->style.window.fixed_background = nk_style_item_color(nk_rgba(255, 255, 255, 25)); // = nk_style_item_hide();
     ctx->style.window.border_color = nk_rgba(0, 0, 0, 255);
-    ctx->style.checkbox.active = nk_style_item_color(nk_rgb(255, 0, 0));
 }
 
 void gui_exit(struct nk_glfw *gui) {
@@ -244,10 +243,7 @@ static void _draw_menu_toggle(App *app, struct nk_glfw *gui, struct nk_context *
     }
 
     nk_layout_row_dynamic(ctx, h - 10, 1);
-
-    if (nk_button_label(ctx, (app->show_menu) ? "Close Menu" : "Open menu")) {
-        app->show_menu = !app->show_menu;
-    }
+    nk_checkbox_label(ctx, (app->show_menu) ? "Close Menu" : "Open menu", &app->show_menu);
 
     nk_end(ctx);
 }
@@ -287,22 +283,23 @@ static void _nk_canvas_begin(
     const char *name,
     struct nk_context *ctx, struct nk_canvas *canvas, nk_flags flags,
     int x, int y, int width, int height, struct nk_color background_color) {
-    /* save style properties which will be overwritten */
+
+    //save style properties which will be overwritten
     canvas->panel_padding = ctx->style.window.padding;
     canvas->item_spacing = ctx->style.window.spacing;
     canvas->window_background = ctx->style.window.fixed_background;
 
-    /* use the complete window space and set background */
+    // use the complete window space and set background
     ctx->style.window.spacing = nk_vec2(0, 0);
     ctx->style.window.padding = nk_vec2(0, 0);
     ctx->style.window.fixed_background = nk_style_item_color(background_color);
 
-    /* create/update window and set position + size */
+    // create/update window and set position + size
     flags = flags & ~NK_WINDOW_DYNAMIC;
     nk_window_set_bounds(ctx, name, nk_rect(x, y, width, height));
     nk_begin(ctx, name, nk_rect(x, y, width, height), NK_WINDOW_NO_SCROLLBAR | flags);
 
-    /* allocate the complete window space for drawing */
+    // allocate the complete window space for drawing
     {
         struct nk_rect total_space;
         total_space = nk_window_get_content_region(ctx);
