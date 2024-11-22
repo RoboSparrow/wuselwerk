@@ -152,6 +152,9 @@ int world_draw(App *app, World *world) {
     }
 
     int res = 0;
+    if (!app->show_quads) {
+        return res;
+    }
 
     // draw quads
     if (world->qtree) {

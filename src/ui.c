@@ -64,7 +64,9 @@ static void _gl_key_callback(GLFWwindow *window, int key, int scancode, int acti
         case GLFW_KEY_D:
             LOG_INFO("toggling debug mode");
             if (app) {
-                app->debug = !app->debug;
+                app->show_targ = !app->show_targ;
+                app->show_crt_info = app->show_targ;
+                app->show_neighbours = app->show_targ;
             }
             break;
         case GLFW_KEY_SPACE:
@@ -208,8 +210,11 @@ static void _draw_menu(App *app, struct nk_glfw *gui, struct nk_context *ctx, Wo
     }
 
     nk_layout_row_dynamic(ctx, 20, 1);
-    nk_checkbox_label(ctx, "debug", &app->debug);
     nk_checkbox_label(ctx, "crt info", &app->show_crt_info);
+    nk_checkbox_label(ctx, "target", &app->show_targ);
+    nk_checkbox_label(ctx, "show quads", &app->show_quads);
+    nk_checkbox_label(ctx, "show neighbours", &app->show_neighbours);
+    nk_checkbox_label(ctx, "show perception", &app->show_perception);
 
     snprintf(msg, 256, "max fps: %ld", app->fps);
     nk_label(ctx, msg, NK_TEXT_LEFT);

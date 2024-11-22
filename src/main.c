@@ -96,9 +96,9 @@ int main(int argc, char **argv) {
 
     // app
 
-    App *app = app_create("Test window");
+    App *app = app_create("WuselWerk");
     app->fps = 24; // cinematic film
-    app->debug = 0;
+    app->show_quads = 1;
     app->paused = 0;
 
     configure(app, world, argc, argv);

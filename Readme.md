@@ -2,6 +2,8 @@
 
 W.I.P. Sandbox simulation using ~~[SDL](https://www.libsdl.org/)~~ OpenGL/GLFW
 
+![screenshot](./assets/screenshot.png)
+
 ---
 
 ## Getting Started

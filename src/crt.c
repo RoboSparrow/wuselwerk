@@ -19,6 +19,18 @@
 const char crt_type_names[][CRT_NAME_LEN] = {"CRT_TYPE_NONE", "CRT_TYPE_HERBIVORE", "CRT_TYPE_CARNIVORE"};
 const char crt_status_names[][CRT_NAME_LEN] = {"CRT_STATUS_NONE", "CRT_STATUS_DEAD", "CRT_STATUS_ALIVE"};
 
+
+static void _draw_circle(Vec2 pos, float r, size_t segments) {
+    glBegin(GL_LINE_LOOP);
+    for (int i = 0; i < segments; i++)   {
+        float theta = 2.0f * M_PI * (float)i / (float) segments;
+        float x = r * cosf(theta);
+        float y = r * sinf(theta);
+        glVertex2f(x + pos.x, y +pos.y);//output vertex
+    }
+    glEnd();
+}
+
 ////
 // Crt
 ////
@@ -209,11 +221,11 @@ int crt_draw(Creature *crt, App *app, World *world) {
 
     switch (crt->type) {
     case CRT_TYPE_HERBIVORE:
-        glColor4f(1.0, 1.0, 0.0, 1.0);
+        glColor4f(0.0, 1.0, 0.0, 1.0);
         glPointSize(crt->size);
         break;
     case CRT_TYPE_CARNIVORE:
-        glColor4f(0.0, 0.0, 1.0, 1.0);
+        glColor4f(1.0, 0.0, 0.0, 1.0);
         glPointSize(crt->size);
         break;
     default:
@@ -225,7 +237,7 @@ int crt_draw(Creature *crt, App *app, World *world) {
     glVertex2f(x, y);
     glEnd();
 
-    if (!app->debug) {
+    if (!app->show_targ) {
         return ret;
     }
 
@@ -280,7 +292,7 @@ int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world) {
     }
 
     int ret = 0;
-    if (!app->debug) {
+    if (!app->show_neighbours && !app->show_perception) {
         return ret;
     }
 
@@ -288,40 +300,30 @@ int crt_draw_neighbours(Creature *crt, QuadList *list, App *app, World *world) {
     float x = crt->pos.x - hsz;
     float y = crt->pos.y - hsz;
 
-    // 1. draw neighbour area rect
-    glColor4f(0.0, 0.0, 0.5, 1.0);
-    glLineWidth(1.0);
-
-    glBegin(GL_LINES);
-    // top
-    glVertex2f(x - crt->perception, y - crt->perception);
-    glVertex2f(x + crt->perception, y - crt->perception);
-    // right
-    glVertex2f(x + crt->perception, y - crt->perception);
-    glVertex2f(x + crt->perception, y + crt->perception);
-    // bottom
-    glVertex2f(x + crt->perception, y + crt->perception);
-    glVertex2f(x - crt->perception, y + crt->perception);
-    // left
-    glVertex2f(x - crt->perception, y + crt->perception);
-    glVertex2f(x - crt->perception, y - crt->perception);
-    glEnd();
+    // 1. draw neighbour perception circle
+    if (app->show_perception) {
+        glColor4f(0.1, 0.2, 0.2, 1.0);
+        glLineWidth(1.0);
+        _draw_circle(crt->pos, crt->perception, 50);
+    }
 
     // 4. draw neighbour relationships
-    Creature *other;
-    glColor4f(0.5, 0.0, 0.0, 1.0);
-    glLineWidth(1.0);
+    if (app->show_neighbours) {
+        Creature *other;
+        glColor4f(0.25, 0.25, 0.1, 1.0);
+        glLineWidth(1.0);
 
-    float ohz;
-    for (size_t i = 0; i < list->len; i++) {
-        if (list->nodes[i] && list->nodes[i]->data) {
-            other = (Creature *)list->nodes[i]->data;
-            ohz = other->size / 2;
-            if (other->id != crt->id) {
-                glBegin(GL_LINES);
-                glVertex2f(crt->pos.x - hsz, crt->pos.y - hsz);
-                glVertex2f(other->pos.x - ohz, other->pos.y - ohz);
-                glEnd();
+        float ohz;
+        for (size_t i = 0; i < list->len; i++) {
+            if (list->nodes[i] && list->nodes[i]->data) {
+                other = (Creature *)list->nodes[i]->data;
+                ohz = other->size / 2;
+                if (other->id != crt->id) {
+                    glBegin(GL_LINES);
+                    glVertex2f(crt->pos.x - hsz, crt->pos.y - hsz);
+                    glVertex2f(other->pos.x - ohz, other->pos.y - ohz);
+                    glEnd();
+                }
             }
         }
     }

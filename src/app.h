@@ -14,7 +14,6 @@ typedef struct App {
 
     // game state
     size_t fps; // seconds
-    int debug;
     int paused;
 
     // ui
@@ -23,7 +22,14 @@ typedef struct App {
 
     // ui state
     int show_menu;
+    // world
+    int show_quads;
+    //crt
+    int show_targ;
     int show_crt_info;
+    int show_neighbours;
+    int show_perception;
+
 } App;
 
 App *app_create(const char *name);
