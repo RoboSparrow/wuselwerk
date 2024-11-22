@@ -25,6 +25,7 @@ make clean && make
 
 ```bash
 ./wusel -h
+./wusel -c 300 -f 24
 ```
 ---
 
@@ -38,3 +39,4 @@ make clean && make
 ## Acknowledgements
 
  * [OpenGL](https://www.opengl.org/)
+ * [Nuklear](https://github.com/Immediate-Mode-UI/Nuklear)
