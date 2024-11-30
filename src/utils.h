@@ -5,6 +5,7 @@
     do {                                                                \
         fprintf(stderr, "[Info](%s:%d) %s\n", __FILE__, __LINE__, msg); \
     } while (0)
+
 #define LOG_INFO_F(fmt, ...)                                                         \
     do {                                                                             \
         fprintf(stderr, "[Info](%s:%d) " fmt "\n", __FILE__, __LINE__, __VA_ARGS__); \
@@ -14,6 +15,7 @@
     do {                                                                 \
         fprintf(stderr, "[Error](%s:%d) %s\n", __FILE__, __LINE__, msg); \
     } while (0)
+
 #define LOG_ERROR_F(fmt, ...)                                                         \
     do {                                                                              \
         fprintf(stderr, "[Error](%s:%d) " fmt "\n", __FILE__, __LINE__, __VA_ARGS__); \
@@ -26,6 +28,7 @@
             exit(EXIT_FAILURE);                                              \
         }                                                                    \
     } while (0)
+
 #define EXIT_IF_F(expr, fmt, ...)                                                         \
     do {                                                                                  \
         if (expr) {                                                                       \

@@ -27,6 +27,7 @@ int rand_range(int min, int max) {
 }
 
 float rand_range_f(float min, float max) {
+    _seed();
     float scale = rand() / (float)RAND_MAX;
     return min + scale * (max - min);
 }

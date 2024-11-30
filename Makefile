@@ -17,6 +17,8 @@ TEST_C=$(wildcard $(TESTDIR)/test.*.c)
 TEST_O=$(OBJECTS) $(patsubst %.c, %.o, $(TEST_C))
 TEST_H=$(HEADERS) $(TESTDIR)/test.h
 
+.PHONY:	prepare clean
+
 all:	prepare $(BIN) test
 
 prepare:
